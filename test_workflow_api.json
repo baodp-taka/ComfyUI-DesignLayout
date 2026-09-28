@@ -1,0 +1,449 @@
+{
+  "2": {
+    "class_type": "PrimitiveStringMultiline",
+    "inputs": {
+      "value": "Poster khai trương quán cà phê vintage \"Mộc Coffee\", giảm 30% tuần đầu, thứ Bảy 12/10, 123 Bạch Đằng Đà Nẵng"
+    },
+    "_meta": {
+      "title": "Yeu cau"
+    }
+  },
+  "3": {
+    "class_type": "PrimitiveStringMultiline",
+    "inputs": {
+      "value": "You are an art director. Plan a design as (1) a text-free background image and\n(2) the TEXT CONTENT with intent. You do NOT choose positions, sizes, fonts or\ncolors — a layout engine does that. Reply with ONE JSON object only (no\nmarkdown, no comments).\n\nSchema:\n{\"language\":\"vietnamese|latin|...\",\n \"mood\":\"vintage|elegant|playful|minimal|bold|festive\",\n \"design_type\":\"poster|banner|invitation|logo|social\",\n \"composition_hint\":\"auto|top_headline|bottom_band|center_stack|left_column|right_column|frame_border|split_diagonal|badge_focus\",\n \"background_prompt\":\"...\",\n \"background_color\":\"#RRGGBB\",\n \"texts\":[{\"role\":\"headline|subheadline|emphasis|body|detail|note\",\n           \"text\":\"...\",\"priority\":1}]}\n\nRULES\n- language: the script of the text you write (match the user's words).\n- mood + design_type: infer from the request; they steer fonts and layout.\n- composition_hint: usually \"auto\" (the engine picks). Choose a specific one\n  only if the user clearly asks for that arrangement. Use \"badge_focus\" when a\n  discount / number should pop (put that number as role \"emphasis\").\n- texts: every piece the design needs, each ONE short line, in the user's exact\n  words. Roles by importance: headline (main), subheadline (support), emphasis\n  (a number/word to highlight), body, detail (date/place/price), note (fine\n  print). priority 1 = most important. Do NOT invent positions or sizes.\n- background_color: the dominant color of the background you describe.\n\nBACKGROUND_PROMPT (English, 50-100 words) — sent to an image model that must\nNOT draw any text.\n- Describe only a scene: subject, setting, style, lighting, colors, mood.\n- Leave calm, empty negative space where text will sit; keep the subject away\n  from the edges/top/bottom so text is readable.\n- NEVER use these words (they make the model draw letters): poster, flyer,\n  banner, card, invitation, sign, signage, menu, label, logo, cover, headline,\n  title, typography, text, letters, words, font, caption, billboard, brochure,\n  advertisement, storefront, quote, slogan. Say illustration, scene, backdrop\n  or photograph instead.\n\nExample request: Poster khai trương quán cà phê vintage \"Mộc Coffee\", giảm 30%\ntuần đầu, thứ Bảy 12/10, 123 Bạch Đằng Đà Nẵng\nExample answer:\n{\"language\":\"vietnamese\",\"mood\":\"vintage\",\"design_type\":\"poster\",\"composition_hint\":\"auto\",\"background_prompt\":\"A cozy vintage coffee shop interior photograph, a warm wooden counter with a copper espresso machine and ceramic cups in the middle of the frame, soft golden pendant light, gentle film grain, warm brown and cream palette. The upper third is a smooth plain dark brown wall with nothing on it and the lower fifth is a calm empty wooden tabletop in soft shadow.\",\"background_color\":\"#3B2618\",\"texts\":[{\"role\":\"headline\",\"text\":\"MỘC COFFEE\",\"priority\":1},{\"role\":\"subheadline\",\"text\":\"KHAI TRƯƠNG · GIẢM 30% TUẦN ĐẦU\",\"priority\":2},{\"role\":\"detail\",\"text\":\"Thứ Bảy 12/10 · 123 Bạch Đằng, Đà Nẵng\",\"priority\":3}]}\n\nRequest:\n"
+    },
+    "_meta": {
+      "title": "System prompt"
+    }
+  },
+  "4": {
+    "class_type": "StringConcatenate",
+    "inputs": {
+      "string_a": [
+        "3",
+        0
+      ],
+      "string_b": [
+        "2",
+        0
+      ],
+      "delimiter": "\n"
+    },
+    "_meta": {
+      "title": "System prompt + yeu cau"
+    }
+  },
+  "5": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3.5_2b_bf16.safetensors",
+      "type": "stable_diffusion",
+      "device": "default"
+    },
+    "_meta": {
+      "title": "LLM (Qwen3.5-2B)"
+    }
+  },
+  "6": {
+    "class_type": "TextGenerate",
+    "inputs": {
+      "clip": [
+        "5",
+        0
+      ],
+      "prompt": [
+        "4",
+        0
+      ],
+      "max_length": 1024,
+      "sampling_mode": "on",
+      "sampling_mode.temperature": 0.4,
+      "sampling_mode.top_k": 64,
+      "sampling_mode.top_p": 0.9,
+      "sampling_mode.min_p": 0.05,
+      "sampling_mode.repetition_penalty": 1.05,
+      "sampling_mode.seed": 42,
+      "sampling_mode.presence_penalty": 0.0,
+      "thinking": false,
+      "use_default_template": true
+    },
+    "_meta": {
+      "title": "Generate Text"
+    }
+  },
+  "7": {
+    "class_type": "PreviewAny",
+    "inputs": {
+      "source": [
+        "6",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "KET QUA LLM"
+    }
+  },
+  "10": {
+    "class_type": "PrimitiveInt",
+    "inputs": {
+      "value": 768
+    },
+    "_meta": {
+      "title": "WIDTH (latent)"
+    }
+  },
+  "11": {
+    "class_type": "PrimitiveInt",
+    "inputs": {
+      "value": 1360
+    },
+    "_meta": {
+      "title": "HEIGHT (latent)"
+    }
+  },
+  "12": {
+    "class_type": "EmptyImage",
+    "inputs": {
+      "width": [
+        "10",
+        0
+      ],
+      "height": [
+        "11",
+        0
+      ],
+      "batch_size": 1,
+      "color": 3876376
+    },
+    "_meta": {
+      "title": "Nen guide"
+    }
+  },
+  "13": {
+    "class_type": "EmptyImage",
+    "inputs": {
+      "width": 688,
+      "height": 380,
+      "batch_size": 1,
+      "color": 5324847
+    },
+    "_meta": {
+      "title": "Mang vung chu"
+    }
+  },
+  "14": {
+    "class_type": "ImageCompositeMasked",
+    "inputs": {
+      "destination": [
+        "12",
+        0
+      ],
+      "source": [
+        "13",
+        0
+      ],
+      "x": 40,
+      "y": 60,
+      "resize_source": false
+    },
+    "_meta": {
+      "title": "Guide (nen + mang)"
+    }
+  },
+  "15": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "14",
+        0
+      ],
+      "filename_prefix": "test_guide"
+    },
+    "_meta": {
+      "title": "test_guide"
+    }
+  },
+  "20": {
+    "class_type": "UnetLoaderGGUF",
+    "inputs": {
+      "unet_name": "qwen-image-edit-2511-Q4_K_M.gguf"
+    },
+    "_meta": {
+      "title": "UNet GGUF"
+    }
+  },
+  "21": {
+    "class_type": "LoraLoaderModelOnly",
+    "inputs": {
+      "model": [
+        "20",
+        0
+      ],
+      "lora_name": "Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors",
+      "strength_model": 1.0
+    },
+    "_meta": {
+      "title": "LoRA Lightning"
+    }
+  },
+  "22": {
+    "class_type": "ModelSamplingAuraFlow",
+    "inputs": {
+      "model": [
+        "21",
+        0
+      ],
+      "shift": 3.0
+    },
+    "_meta": {
+      "title": "ModelSamplingAuraFlow"
+    }
+  },
+  "23": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    },
+    "_meta": {
+      "title": "VAELoader"
+    }
+  },
+  "24": {
+    "class_type": "EmptySD3LatentImage",
+    "inputs": {
+      "width": [
+        "10",
+        0
+      ],
+      "height": [
+        "11",
+        0
+      ],
+      "batch_size": 1
+    },
+    "_meta": {
+      "title": "Latent WIDTH x HEIGHT"
+    }
+  },
+  "25": {
+    "class_type": "PrimitiveStringMultiline",
+    "inputs": {
+      "value": "A cozy vintage coffee shop interior photograph, a warm wooden counter with a copper espresso machine, soft golden light, shallow depth of field. Keep the main subject away from these areas: the upper center area is a smooth, plain, empty surface with nothing on it."
+    },
+    "_meta": {
+      "title": "Prompt nen"
+    }
+  },
+  "30": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "type": "qwen_image",
+      "device": "default"
+    },
+    "_meta": {
+      "title": "A: text encoder fp8"
+    }
+  },
+  "31": {
+    "class_type": "TextEncodeQwenImageEditPlus",
+    "inputs": {
+      "clip": [
+        "30",
+        0
+      ],
+      "vae": [
+        "23",
+        0
+      ],
+      "image1": [
+        "14",
+        0
+      ],
+      "prompt": [
+        "25",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Encode test_te_fp8"
+    }
+  },
+  "32": {
+    "class_type": "ConditioningZeroOut",
+    "inputs": {
+      "conditioning": [
+        "31",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Negative rong"
+    }
+  },
+  "33": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": [
+        "22",
+        0
+      ],
+      "positive": [
+        "31",
+        0
+      ],
+      "negative": [
+        "32",
+        0
+      ],
+      "latent_image": [
+        "24",
+        0
+      ],
+      "seed": 123456,
+      "steps": 4,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1
+    },
+    "_meta": {
+      "title": "KSampler test_te_fp8"
+    }
+  },
+  "34": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "33",
+        0
+      ],
+      "vae": [
+        "23",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "VAEDecode"
+    }
+  },
+  "35": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "34",
+        0
+      ],
+      "filename_prefix": "test_te_fp8"
+    },
+    "_meta": {
+      "title": "test_te_fp8"
+    }
+  },
+  "40": {
+    "class_type": "CLIPLoaderGGUF",
+    "inputs": {
+      "clip_name": "Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf",
+      "type": "qwen_image"
+    },
+    "_meta": {
+      "title": "B: text encoder GGUF Q4_K_M + mmproj"
+    }
+  },
+  "41": {
+    "class_type": "TextEncodeQwenImageEditPlus",
+    "inputs": {
+      "clip": [
+        "40",
+        0
+      ],
+      "vae": [
+        "23",
+        0
+      ],
+      "image1": [
+        "14",
+        0
+      ],
+      "prompt": [
+        "25",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Encode test_te_gguf"
+    }
+  },
+  "42": {
+    "class_type": "ConditioningZeroOut",
+    "inputs": {
+      "conditioning": [
+        "41",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Negative rong"
+    }
+  },
+  "43": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": [
+        "22",
+        0
+      ],
+      "positive": [
+        "41",
+        0
+      ],
+      "negative": [
+        "42",
+        0
+      ],
+      "latent_image": [
+        "24",
+        0
+      ],
+      "seed": 123456,
+      "steps": 4,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1
+    },
+    "_meta": {
+      "title": "KSampler test_te_gguf"
+    }
+  },
+  "44": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "43",
+        0
+      ],
+      "vae": [
+        "23",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "VAEDecode"
+    }
+  },
+  "45": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "44",
+        0
+      ],
+      "filename_prefix": "test_te_gguf"
+    },
+    "_meta": {
+      "title": "test_te_gguf"
+    }
+  }
+}

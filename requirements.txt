@@ -1,0 +1,8 @@
+# ComfyUI-DesignLayout runtime deps. Kept light for serverless (RunningHub).
+# torch is provided by the ComfyUI host; listed for offline tests only.
+numpy>=1.23
+Pillow>=9.5
+fonttools>=4.40
+opencv-python-headless>=4.8   # optional; code falls back to numpy if absent
+PyYAML>=6.0                   # optional; fonts.json is used by default
+pytest>=7.0                   # tests only

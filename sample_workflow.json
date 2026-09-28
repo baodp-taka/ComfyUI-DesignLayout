@@ -1,0 +1,2014 @@
+{
+  "id": "00000000-0000-0000-0000-000000000009",
+  "revision": 0,
+  "last_node_id": 36,
+  "last_link_id": 44,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "Note",
+      "pos": [
+        -480,
+        -520
+      ],
+      "size": [
+        440,
+        400
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "GHI CHU - DOC TRUOC",
+      "properties": {
+        "widget_ue_connectable": {},
+        "Node name for S&R": "Note"
+      },
+      "widgets_values": [
+        "LUONG: yeu cau -> LLM lap ke hoach (Generate Text, Qwen3-4B, JSON noi dung)\n  -> 1. Parse JSON -> 2. Layout Engine (bo cuc + guide + prompt nen)\n  -> Qwen 2511 tao nen (guide vao image1) -> 6. Zone Check (mau/tuong phan)\n  -> 7. THIET KE CUOI: anh da ghep chu (WIDTH x HEIGHT).\n\n1. Go yeu cau vao '1. YEU CAU' (tieng Viet thoai mai).\n2. Dat WIDTH / HEIGHT = kich thuoc thiet ke cuoi (1080x1920, 1080x1350,\n   1920x1080, 1500x500...; ti le 1:4 .. 4:1). Layout tu chon template hop\n   ti le khung (tall / portrait / square / landscape / wide).\n3. Kich thuoc nen (latent) tu tinh theo ti le khung, ~1MP, boi so 16.\n4. LLM: 'LLM (Qwen3.5-2B)' nap qwen3.5_2b_bf16.safetensors;\n   system prompt + yeu cau duoc ghep (Concatenate Text) roi dua vao\n   prompt cua Generate Text.\n5. Van con chu tren nen? Bo LoRA Lightning, cfg 3-4, 20+ steps, dua\n   'text, letters, words, typography, watermark, logo' vao NEGATIVE that."
+      ],
+      "color": "#432",
+      "bgcolor": "#653"
+    },
+    {
+      "id": 2,
+      "type": "PrimitiveStringMultiline",
+      "pos": [
+        -480,
+        -80
+      ],
+      "size": [
+        440,
+        180
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "value",
+          "name": "value",
+          "type": "STRING",
+          "widget": {
+            "name": "value"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            28
+          ]
+        }
+      ],
+      "title": "1. YEU CAU (ngon ngu tu nhien)",
+      "properties": {
+        "Node name for S&R": "PrimitiveStringMultiline",
+        "widget_ue_connectable": {
+          "value": true
+        }
+      },
+      "widgets_values": [
+        "Poster khai trương quán cà phê phong cách vintage ấm cúng, tên quán \"Mộc Coffee\", giảm 30% tuần đầu, khai trương thứ Bảy 12/10, địa chỉ 123 Bạch Đằng, Đà Nẵng"
+      ],
+      "color": "#232"
+    },
+    {
+      "id": 3,
+      "type": "PrimitiveStringMultiline",
+      "pos": [
+        -480,
+        140
+      ],
+      "size": [
+        440,
+        260
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "value",
+          "name": "value",
+          "type": "STRING",
+          "widget": {
+            "name": "value"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            27
+          ]
+        }
+      ],
+      "title": "System prompt lap ke hoach (khong can sua)",
+      "properties": {
+        "Node name for S&R": "PrimitiveStringMultiline",
+        "widget_ue_connectable": {
+          "value": true
+        }
+      },
+      "widgets_values": [
+        "You are an art director. Plan a design as (1) a text-free background image and\n(2) the TEXT CONTENT with intent. You do NOT choose positions, sizes, fonts or\ncolors — a layout engine does that. Reply with ONE JSON object only (no\nmarkdown, no comments).\n\nSchema:\n{\"language\":\"vietnamese|latin|...\",\n \"mood\":\"vintage|elegant|playful|minimal|bold|festive\",\n \"design_type\":\"poster|banner|invitation|logo|social\",\n \"composition_hint\":\"auto|top_headline|bottom_band|center_stack|left_column|right_column|frame_border|split_diagonal|badge_focus\",\n \"background_prompt\":\"...\",\n \"background_color\":\"#RRGGBB\",\n \"texts\":[{\"role\":\"headline|subheadline|emphasis|body|detail|note\",\n           \"text\":\"...\",\"priority\":1}]}\n\nRULES\n- language: the script of the text you write (match the user's words).\n- mood + design_type: infer from the request; they steer fonts and layout.\n- composition_hint: usually \"auto\" (the engine picks). Choose a specific one\n  only if the user clearly asks for that arrangement. Use \"badge_focus\" when a\n  discount / number should pop (put that number as role \"emphasis\").\n- texts: every piece the design needs, each ONE short line, in the user's exact\n  words. Roles by importance: headline (main), subheadline (support), emphasis\n  (a number/word to highlight), body, detail (date/place/price), note (fine\n  print). priority 1 = most important. Do NOT invent positions or sizes.\n- background_color: the dominant color of the background you describe.\n\nBACKGROUND_PROMPT (English, 50-100 words) — sent to an image model that must\nNOT draw any text.\n- Describe only a scene: subject, setting, style, lighting, colors, mood.\n- Leave calm, empty negative space where text will sit; keep the subject away\n  from the edges/top/bottom so text is readable.\n- NEVER use these words (they make the model draw letters): poster, flyer,\n  banner, card, invitation, sign, signage, menu, label, logo, cover, headline,\n  title, typography, text, letters, words, font, caption, billboard, brochure,\n  advertisement, storefront, quote, slogan. Say illustration, scene, backdrop\n  or photograph instead.\n\nExample request: Poster khai trương quán cà phê vintage \"Mộc Coffee\", giảm 30%\ntuần đầu, thứ Bảy 12/10, 123 Bạch Đằng Đà Nẵng\nExample answer:\n{\"language\":\"vietnamese\",\"mood\":\"vintage\",\"design_type\":\"poster\",\"composition_hint\":\"auto\",\"background_prompt\":\"A cozy vintage coffee shop interior photograph, a warm wooden counter with a copper espresso machine and ceramic cups in the middle of the frame, soft golden pendant light, gentle film grain, warm brown and cream palette. The upper third is a smooth plain dark brown wall with nothing on it and the lower fifth is a calm empty wooden tabletop in soft shadow.\",\"background_color\":\"#3B2618\",\"texts\":[{\"role\":\"headline\",\"text\":\"MỘC COFFEE\",\"priority\":1},{\"role\":\"subheadline\",\"text\":\"KHAI TRƯƠNG · GIẢM 30% TUẦN ĐẦU\",\"priority\":2},{\"role\":\"detail\",\"text\":\"Thứ Bảy 12/10 · 123 Bạch Đằng, Đà Nẵng\",\"priority\":3}]}\n\nRequest:\n"
+      ]
+    },
+    {
+      "id": 5,
+      "type": "PreviewAny",
+      "pos": [
+        0,
+        500
+      ],
+      "size": [
+        380,
+        300
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "source",
+          "name": "source",
+          "type": "*",
+          "link": 30
+        }
+      ],
+      "outputs": [
+        {
+          "label": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "title": "KET QUA LLM",
+      "properties": {
+        "Node name for S&R": "PreviewAny",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 14,
+      "type": "UnetLoaderGGUF",
+      "pos": [
+        1160,
+        -80
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "unet_name",
+          "name": "unet_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "unet_name"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "model",
+          "name": "model",
+          "type": "MODEL",
+          "links": [
+            12
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UnetLoaderGGUF",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "qwen-image-edit-2511-Q4_K_M.gguf"
+      ]
+    },
+    {
+      "id": 15,
+      "type": "LoraLoaderModelOnly",
+      "pos": [
+        1160,
+        40
+      ],
+      "size": [
+        270,
+        82
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 12
+        },
+        {
+          "label": "lora_name",
+          "name": "lora_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "lora_name"
+          },
+          "link": null
+        },
+        {
+          "label": "strength_model",
+          "name": "strength_model",
+          "type": "FLOAT",
+          "widget": {
+            "name": "strength_model"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "MODEL",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            13
+          ]
+        }
+      ],
+      "title": "LoraLoaderModelOnly",
+      "properties": {
+        "Node name for S&R": "LoraLoaderModelOnly",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors",
+        1.0000000000000002
+      ]
+    },
+    {
+      "id": 16,
+      "type": "ModelSamplingAuraFlow",
+      "pos": [
+        1160,
+        180
+      ],
+      "size": [
+        270,
+        82
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 13
+        },
+        {
+          "label": "shift",
+          "name": "shift",
+          "type": "FLOAT",
+          "widget": {
+            "name": "shift"
+          },
+          "link": null
+        },
+        {
+          "label": "sampling",
+          "name": "sampling",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "sampling"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "MODEL",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            14
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "ModelSamplingAuraFlow",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        3.0000000000000004,
+        "flow"
+      ]
+    },
+    {
+      "id": 17,
+      "type": "CFGNorm",
+      "pos": [
+        1160,
+        300
+      ],
+      "size": [
+        337.6529235839844,
+        82
+      ],
+      "flags": {},
+      "order": 16,
+      "mode": 4,
+      "inputs": [
+        {
+          "label": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 14
+        },
+        {
+          "label": "strength",
+          "name": "strength",
+          "type": "FLOAT",
+          "widget": {
+            "name": "strength"
+          },
+          "link": null
+        },
+        {
+          "label": "pre_cfg",
+          "name": "pre_cfg",
+          "shape": 7,
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "pre_cfg"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "patched_model",
+          "name": "patched_model",
+          "type": "MODEL",
+          "links": [
+            18
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CFGNorm",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        0.8600000000000002,
+        false
+      ]
+    },
+    {
+      "id": 18,
+      "type": "CLIPLoader",
+      "pos": [
+        1160,
+        440
+      ],
+      "size": [
+        270,
+        106
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "clip_name",
+          "name": "clip_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "clip_name"
+          },
+          "link": null
+        },
+        {
+          "label": "type",
+          "name": "type",
+          "type": "COMBO",
+          "widget": {
+            "name": "type"
+          },
+          "link": null
+        },
+        {
+          "label": "device",
+          "name": "device",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "device"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "CLIP",
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            15
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPLoader",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+        "qwen_image",
+        "default"
+      ]
+    },
+    {
+      "id": 19,
+      "type": "VAELoader",
+      "pos": [
+        1160,
+        600
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "vae_name",
+          "name": "vae_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "vae_name"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "VAE",
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            23,
+            35
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAELoader",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "qwen_image_vae.safetensors"
+      ]
+    },
+    {
+      "id": 20,
+      "type": "TextEncodeQwenImageEditPlus",
+      "pos": [
+        1540,
+        -80
+      ],
+      "size": [
+        413.8667907714844,
+        200
+      ],
+      "flags": {},
+      "order": 21,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "clip",
+          "name": "clip",
+          "type": "CLIP",
+          "link": 15
+        },
+        {
+          "label": "vae",
+          "name": "vae",
+          "shape": 7,
+          "type": "VAE",
+          "link": 35
+        },
+        {
+          "label": "image1",
+          "name": "image1",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": 34
+        },
+        {
+          "label": "image2",
+          "name": "image2",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "label": "image3",
+          "name": "image3",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "label": "prompt",
+          "name": "prompt",
+          "type": "STRING",
+          "widget": {
+            "name": "prompt"
+          },
+          "link": 36
+        }
+      ],
+      "outputs": [
+        {
+          "label": "CONDITIONING",
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            17,
+            19
+          ]
+        }
+      ],
+      "title": "TEXT ENCODER NEN",
+      "properties": {
+        "Node name for S&R": "TextEncodeQwenImageEditPlus",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 21,
+      "type": "ConditioningZeroOut",
+      "pos": [
+        1540,
+        180
+      ],
+      "size": [
+        292.8228454589844,
+        30
+      ],
+      "flags": {},
+      "order": 22,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "conditioning",
+          "name": "conditioning",
+          "type": "CONDITIONING",
+          "link": 17
+        }
+      ],
+      "outputs": [
+        {
+          "label": "CONDITIONING",
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            20
+          ]
+        }
+      ],
+      "title": "Negative rong",
+      "properties": {
+        "Node name for S&R": "ConditioningZeroOut",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 22,
+      "type": "EmptySD3LatentImage",
+      "pos": [
+        1540,
+        300
+      ],
+      "size": [
+        320,
+        110
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "width",
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": 42
+        },
+        {
+          "label": "height",
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": 43
+        },
+        {
+          "label": "batch_size",
+          "name": "batch_size",
+          "type": "INT",
+          "widget": {
+            "name": "batch_size"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "LATENT",
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            21
+          ]
+        }
+      ],
+      "title": "Nen (tu dong theo WIDTH/HEIGHT)",
+      "properties": {
+        "Node name for S&R": "EmptySD3LatentImage",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        1024,
+        1024,
+        1
+      ]
+    },
+    {
+      "id": 23,
+      "type": "KSampler",
+      "pos": [
+        1920,
+        -80
+      ],
+      "size": [
+        270,
+        262
+      ],
+      "flags": {},
+      "order": 23,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 18
+        },
+        {
+          "label": "positive",
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 19
+        },
+        {
+          "label": "negative",
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 20
+        },
+        {
+          "label": "latent_image",
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 21
+        },
+        {
+          "label": "seed",
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": null
+        },
+        {
+          "label": "steps",
+          "name": "steps",
+          "type": "INT",
+          "widget": {
+            "name": "steps"
+          },
+          "link": null
+        },
+        {
+          "label": "cfg",
+          "name": "cfg",
+          "type": "FLOAT",
+          "widget": {
+            "name": "cfg"
+          },
+          "link": null
+        },
+        {
+          "label": "sampler_name",
+          "name": "sampler_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "sampler_name"
+          },
+          "link": null
+        },
+        {
+          "label": "scheduler",
+          "name": "scheduler",
+          "type": "COMBO",
+          "widget": {
+            "name": "scheduler"
+          },
+          "link": null
+        },
+        {
+          "label": "denoise",
+          "name": "denoise",
+          "type": "FLOAT",
+          "widget": {
+            "name": "denoise"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "LATENT",
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            22
+          ]
+        }
+      ],
+      "title": "4. KSAMPLER NEN",
+      "properties": {
+        "Node name for S&R": "KSampler",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        149987500028749,
+        "randomize",
+        4,
+        1,
+        "euler",
+        "simple",
+        1
+      ]
+    },
+    {
+      "id": 24,
+      "type": "VAEDecode",
+      "pos": [
+        2260,
+        -80
+      ],
+      "size": [
+        140,
+        46
+      ],
+      "flags": {},
+      "order": 24,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "samples",
+          "name": "samples",
+          "type": "LATENT",
+          "link": 22
+        },
+        {
+          "label": "vae",
+          "name": "vae",
+          "type": "VAE",
+          "link": 23
+        }
+      ],
+      "outputs": [
+        {
+          "label": "IMAGE",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            24,
+            38
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAEDecode",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 25,
+      "type": "SaveImage",
+      "pos": [
+        2260,
+        40
+      ],
+      "size": [
+        270,
+        290
+      ],
+      "flags": {},
+      "order": 25,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "link": 24
+        },
+        {
+          "label": "filename_prefix",
+          "name": "filename_prefix",
+          "type": "STRING",
+          "widget": {
+            "name": "filename_prefix"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "label": "image_urls",
+          "name": "image_urls",
+          "type": "STRING",
+          "links": []
+        },
+        {
+          "label": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "links": []
+        }
+      ],
+      "title": "5. LUU NEN (khong chu)",
+      "properties": {
+        "Node name for S&R": "SaveImage",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "background"
+      ],
+      "color": "#533"
+    },
+    {
+      "id": 27,
+      "type": "DesignJSONParse",
+      "title": "1. Parse JSON",
+      "pos": [
+        760,
+        -120
+      ],
+      "size": [
+        320,
+        90
+      ],
+      "flags": {},
+      "order": 27,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "llm_output",
+          "label": "llm_output",
+          "type": "STRING",
+          "widget": {
+            "name": "llm_output"
+          },
+          "link": 31
+        }
+      ],
+      "outputs": [
+        {
+          "name": "design_spec",
+          "label": "design_spec",
+          "type": "STRING",
+          "links": [
+            32
+          ]
+        },
+        {
+          "name": "background_prompt",
+          "label": "background_prompt",
+          "type": "STRING",
+          "links": [
+            33
+          ]
+        },
+        {
+          "name": "warnings",
+          "label": "warnings",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DesignJSONParse"
+      },
+      "widgets_values": [
+        ""
+      ]
+    },
+    {
+      "id": 28,
+      "type": "DesignLayoutEngine",
+      "title": "2. Layout Engine",
+      "pos": [
+        760,
+        120
+      ],
+      "size": [
+        340,
+        360
+      ],
+      "flags": {},
+      "order": 28,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "design_spec",
+          "label": "design_spec",
+          "type": "STRING",
+          "widget": {
+            "name": "design_spec"
+          },
+          "link": 32
+        },
+        {
+          "name": "fonts_dir",
+          "label": "fonts_dir",
+          "type": "STRING",
+          "widget": {
+            "name": "fonts_dir"
+          },
+          "link": null
+        },
+        {
+          "name": "canvas_width",
+          "label": "canvas_width",
+          "type": "INT",
+          "widget": {
+            "name": "canvas_width"
+          },
+          "link": 40
+        },
+        {
+          "name": "canvas_height",
+          "label": "canvas_height",
+          "type": "INT",
+          "widget": {
+            "name": "canvas_height"
+          },
+          "link": 41
+        },
+        {
+          "name": "bg_width",
+          "label": "bg_width",
+          "type": "INT",
+          "widget": {
+            "name": "bg_width"
+          },
+          "link": null
+        },
+        {
+          "name": "bg_height",
+          "label": "bg_height",
+          "type": "INT",
+          "widget": {
+            "name": "bg_height"
+          },
+          "link": null
+        },
+        {
+          "name": "seed",
+          "label": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": null
+        },
+        {
+          "name": "composition",
+          "label": "composition",
+          "type": "COMBO",
+          "widget": {
+            "name": "composition"
+          },
+          "link": null
+        },
+        {
+          "name": "guide_mode",
+          "label": "guide_mode",
+          "type": "COMBO",
+          "widget": {
+            "name": "guide_mode"
+          },
+          "link": null
+        },
+        {
+          "name": "feather_px",
+          "label": "feather_px",
+          "type": "INT",
+          "widget": {
+            "name": "feather_px"
+          },
+          "link": null
+        },
+        {
+          "name": "zone_padding",
+          "label": "zone_padding",
+          "type": "INT",
+          "widget": {
+            "name": "zone_padding"
+          },
+          "link": null
+        },
+        {
+          "name": "background_prompt",
+          "label": "background_prompt",
+          "type": "STRING",
+          "widget": {
+            "name": "background_prompt"
+          },
+          "shape": 7,
+          "link": 33
+        }
+      ],
+      "outputs": [
+        {
+          "name": "guide_image",
+          "label": "guide_image",
+          "type": "IMAGE",
+          "links": [
+            34
+          ]
+        },
+        {
+          "name": "text_mask",
+          "label": "text_mask",
+          "type": "MASK",
+          "links": []
+        },
+        {
+          "name": "layout_json",
+          "label": "layout_json",
+          "type": "STRING",
+          "links": [
+            37
+          ]
+        },
+        {
+          "name": "background_prompt_augmented",
+          "label": "background_prompt_augmented",
+          "type": "STRING",
+          "links": [
+            36
+          ]
+        },
+        {
+          "name": "debug_preview",
+          "label": "debug_preview",
+          "type": "IMAGE",
+          "links": []
+        },
+        {
+          "name": "bg_width",
+          "label": "bg_width",
+          "type": "INT",
+          "links": [
+            42
+          ]
+        },
+        {
+          "name": "bg_height",
+          "label": "bg_height",
+          "type": "INT",
+          "links": [
+            43
+          ]
+        },
+        {
+          "name": "warnings",
+          "label": "warnings",
+          "type": "STRING",
+          "links": [
+            44
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DesignLayoutEngine"
+      },
+      "widgets_values": [
+        "",
+        "fonts",
+        1080,
+        1080,
+        0,
+        0,
+        0,
+        "auto",
+        "flat",
+        24,
+        18,
+        ""
+      ]
+    },
+    {
+      "id": 29,
+      "type": "DesignZoneCheck",
+      "title": "6. Zone Check",
+      "pos": [
+        2260,
+        200
+      ],
+      "size": [
+        320,
+        160
+      ],
+      "flags": {},
+      "order": 29,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "background",
+          "label": "background",
+          "type": "IMAGE",
+          "link": 38
+        },
+        {
+          "name": "layout_json",
+          "label": "layout_json",
+          "type": "STRING",
+          "widget": {
+            "name": "layout_json"
+          },
+          "link": 37
+        },
+        {
+          "name": "fonts_dir",
+          "label": "fonts_dir",
+          "type": "STRING",
+          "widget": {
+            "name": "fonts_dir"
+          },
+          "link": null
+        },
+        {
+          "name": "busy_threshold",
+          "label": "busy_threshold",
+          "type": "FLOAT",
+          "widget": {
+            "name": "busy_threshold"
+          },
+          "link": null
+        },
+        {
+          "name": "min_contrast",
+          "label": "min_contrast",
+          "type": "FLOAT",
+          "widget": {
+            "name": "min_contrast"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "final_json",
+          "label": "final_json",
+          "type": "STRING",
+          "links": []
+        },
+        {
+          "name": "composite_preview",
+          "label": "composite_preview",
+          "type": "IMAGE",
+          "links": [
+            39
+          ]
+        },
+        {
+          "name": "report",
+          "label": "report",
+          "type": "STRING",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "DesignZoneCheck"
+      },
+      "widgets_values": [
+        "",
+        "fonts",
+        0.18,
+        4.5
+      ]
+    },
+    {
+      "id": 30,
+      "type": "SaveImage",
+      "title": "7. THIET KE CUOI (anh co chu)",
+      "pos": [
+        2620,
+        200
+      ],
+      "size": [
+        300,
+        300
+      ],
+      "flags": {},
+      "order": 30,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "label": "images",
+          "type": "IMAGE",
+          "link": 39
+        },
+        {
+          "name": "filename_prefix",
+          "label": "filename_prefix",
+          "type": "STRING",
+          "widget": {
+            "name": "filename_prefix"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "design"
+      ]
+    },
+    {
+      "id": 31,
+      "type": "PrimitiveInt",
+      "title": "WIDTH (kich thuoc thiet ke)",
+      "pos": [
+        400,
+        380
+      ],
+      "size": [
+        300,
+        82
+      ],
+      "flags": {},
+      "order": 31,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "value",
+          "label": "value",
+          "type": "INT",
+          "widget": {
+            "name": "value"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "INT",
+          "label": "INT",
+          "type": "INT",
+          "links": [
+            40
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PrimitiveInt"
+      },
+      "widgets_values": [
+        1080,
+        "fixed"
+      ]
+    },
+    {
+      "id": 32,
+      "type": "PrimitiveInt",
+      "title": "HEIGHT (kich thuoc thiet ke)",
+      "pos": [
+        400,
+        480
+      ],
+      "size": [
+        300,
+        82
+      ],
+      "flags": {},
+      "order": 32,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "value",
+          "label": "value",
+          "type": "INT",
+          "widget": {
+            "name": "value"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "INT",
+          "label": "INT",
+          "type": "INT",
+          "links": [
+            41
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PrimitiveInt"
+      },
+      "widgets_values": [
+        1080,
+        "fixed"
+      ]
+    },
+    {
+      "id": 33,
+      "type": "PreviewAny",
+      "title": "Canh bao layout",
+      "pos": [
+        1140,
+        480
+      ],
+      "size": [
+        320,
+        140
+      ],
+      "flags": {},
+      "order": 33,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "source",
+          "label": "source",
+          "type": "*",
+          "link": 44
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "PreviewAny"
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 34,
+      "type": "CLIPLoader",
+      "title": "LLM (Qwen3.5-2B)",
+      "pos": [
+        -480,
+        560
+      ],
+      "size": [
+        320,
+        110
+      ],
+      "flags": {},
+      "order": 34,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip_name",
+          "label": "clip_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "clip_name"
+          },
+          "link": null
+        },
+        {
+          "name": "type",
+          "label": "type",
+          "type": "COMBO",
+          "widget": {
+            "name": "type"
+          },
+          "link": null
+        },
+        {
+          "name": "device",
+          "label": "device",
+          "type": "COMBO",
+          "widget": {
+            "name": "device"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "label": "CLIP",
+          "type": "CLIP",
+          "links": [
+            26
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPLoader"
+      },
+      "widgets_values": [
+        "qwen3.5_2b_bf16.safetensors",
+        "stable_diffusion",
+        "default"
+      ]
+    },
+    {
+      "id": 35,
+      "type": "TextGenerate",
+      "title": "2. LLM LAP KE HOACH (Generate Text)",
+      "pos": [
+        0,
+        60
+      ],
+      "size": [
+        400,
+        400
+      ],
+      "flags": {},
+      "order": 35,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "label": "clip",
+          "type": "CLIP",
+          "link": 26
+        },
+        {
+          "name": "prompt",
+          "label": "prompt",
+          "type": "STRING",
+          "widget": {
+            "name": "prompt"
+          },
+          "link": 29
+        },
+        {
+          "name": "max_length",
+          "label": "max_length",
+          "type": "INT",
+          "widget": {
+            "name": "max_length"
+          },
+          "link": null
+        },
+        {
+          "name": "sampling_mode",
+          "label": "sampling_mode",
+          "type": "COMFY_DYNAMICCOMBO_V3",
+          "widget": {
+            "name": "sampling_mode"
+          },
+          "link": null
+        },
+        {
+          "name": "sampling_mode.temperature",
+          "label": "sampling_mode.temperature",
+          "type": "FLOAT",
+          "widget": {
+            "name": "sampling_mode.temperature"
+          },
+          "link": null
+        },
+        {
+          "name": "sampling_mode.top_k",
+          "label": "sampling_mode.top_k",
+          "type": "INT",
+          "widget": {
+            "name": "sampling_mode.top_k"
+          },
+          "link": null
+        },
+        {
+          "name": "sampling_mode.top_p",
+          "label": "sampling_mode.top_p",
+          "type": "FLOAT",
+          "widget": {
+            "name": "sampling_mode.top_p"
+          },
+          "link": null
+        },
+        {
+          "name": "sampling_mode.min_p",
+          "label": "sampling_mode.min_p",
+          "type": "FLOAT",
+          "widget": {
+            "name": "sampling_mode.min_p"
+          },
+          "link": null
+        },
+        {
+          "name": "sampling_mode.repetition_penalty",
+          "label": "sampling_mode.repetition_penalty",
+          "type": "FLOAT",
+          "widget": {
+            "name": "sampling_mode.repetition_penalty"
+          },
+          "link": null
+        },
+        {
+          "name": "sampling_mode.seed",
+          "label": "sampling_mode.seed",
+          "type": "INT",
+          "widget": {
+            "name": "sampling_mode.seed"
+          },
+          "link": null
+        },
+        {
+          "name": "sampling_mode.presence_penalty",
+          "label": "sampling_mode.presence_penalty",
+          "type": "FLOAT",
+          "widget": {
+            "name": "sampling_mode.presence_penalty"
+          },
+          "shape": 7,
+          "link": null
+        },
+        {
+          "name": "thinking",
+          "label": "thinking",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "thinking"
+          },
+          "shape": 7,
+          "link": null
+        },
+        {
+          "name": "use_default_template",
+          "label": "use_default_template",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "use_default_template"
+          },
+          "shape": 7,
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "generated_text",
+          "label": "generated_text",
+          "type": "STRING",
+          "links": [
+            30,
+            31
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "TextGenerate"
+      },
+      "widgets_values": [
+        "",
+        1024,
+        "on",
+        0.4,
+        64,
+        0.9,
+        0.05,
+        1.05,
+        0,
+        0.0,
+        false,
+        true
+      ]
+    },
+    {
+      "id": 36,
+      "type": "StringConcatenate",
+      "title": "System prompt + yeu cau",
+      "pos": [
+        -480,
+        360
+      ],
+      "size": [
+        320,
+        130
+      ],
+      "flags": {},
+      "order": 36,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "string_a",
+          "label": "string_a",
+          "type": "STRING",
+          "widget": {
+            "name": "string_a"
+          },
+          "link": 27
+        },
+        {
+          "name": "string_b",
+          "label": "string_b",
+          "type": "STRING",
+          "widget": {
+            "name": "string_b"
+          },
+          "link": 28
+        },
+        {
+          "name": "delimiter",
+          "label": "delimiter",
+          "type": "STRING",
+          "widget": {
+            "name": "delimiter"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "label": "STRING",
+          "type": "STRING",
+          "links": [
+            29
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "StringConcatenate"
+      },
+      "widgets_values": [
+        "",
+        "",
+        "\n"
+      ]
+    }
+  ],
+  "links": [
+    [
+      12,
+      14,
+      0,
+      15,
+      0,
+      "MODEL"
+    ],
+    [
+      13,
+      15,
+      0,
+      16,
+      0,
+      "MODEL"
+    ],
+    [
+      14,
+      16,
+      0,
+      17,
+      0,
+      "MODEL"
+    ],
+    [
+      15,
+      18,
+      0,
+      20,
+      0,
+      "CLIP"
+    ],
+    [
+      17,
+      20,
+      0,
+      21,
+      0,
+      "CONDITIONING"
+    ],
+    [
+      18,
+      17,
+      0,
+      23,
+      0,
+      "MODEL"
+    ],
+    [
+      19,
+      20,
+      0,
+      23,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      20,
+      21,
+      0,
+      23,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      21,
+      22,
+      0,
+      23,
+      3,
+      "LATENT"
+    ],
+    [
+      22,
+      23,
+      0,
+      24,
+      0,
+      "LATENT"
+    ],
+    [
+      23,
+      19,
+      0,
+      24,
+      1,
+      "VAE"
+    ],
+    [
+      24,
+      24,
+      0,
+      25,
+      0,
+      "IMAGE"
+    ],
+    [
+      26,
+      34,
+      0,
+      35,
+      0,
+      "CLIP"
+    ],
+    [
+      27,
+      3,
+      0,
+      36,
+      0,
+      "STRING"
+    ],
+    [
+      28,
+      2,
+      0,
+      36,
+      1,
+      "STRING"
+    ],
+    [
+      29,
+      36,
+      0,
+      35,
+      1,
+      "STRING"
+    ],
+    [
+      30,
+      35,
+      0,
+      5,
+      0,
+      "STRING"
+    ],
+    [
+      31,
+      35,
+      0,
+      27,
+      0,
+      "STRING"
+    ],
+    [
+      32,
+      27,
+      0,
+      28,
+      0,
+      "STRING"
+    ],
+    [
+      33,
+      27,
+      1,
+      28,
+      11,
+      "STRING"
+    ],
+    [
+      34,
+      28,
+      0,
+      20,
+      2,
+      "IMAGE"
+    ],
+    [
+      35,
+      19,
+      0,
+      20,
+      1,
+      "VAE"
+    ],
+    [
+      36,
+      28,
+      3,
+      20,
+      5,
+      "STRING"
+    ],
+    [
+      37,
+      28,
+      2,
+      29,
+      1,
+      "STRING"
+    ],
+    [
+      38,
+      24,
+      0,
+      29,
+      0,
+      "IMAGE"
+    ],
+    [
+      39,
+      29,
+      1,
+      30,
+      0,
+      "IMAGE"
+    ],
+    [
+      40,
+      31,
+      0,
+      28,
+      2,
+      "INT"
+    ],
+    [
+      41,
+      32,
+      0,
+      28,
+      3,
+      "INT"
+    ],
+    [
+      42,
+      28,
+      5,
+      22,
+      0,
+      "INT"
+    ],
+    [
+      43,
+      28,
+      6,
+      22,
+      1,
+      "INT"
+    ],
+    [
+      44,
+      28,
+      7,
+      33,
+      0,
+      "STRING"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "TANG 1 - LLM LAP KE HOACH",
+      "bounding": [
+        -500,
+        -160,
+        900,
+        980
+      ],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "TANG 2 - TACH PROMPT NEN + LUU JSON",
+      "bounding": [
+        400,
+        -160,
+        720,
+        1240
+      ],
+      "color": "#a1309b",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 3,
+      "title": "TANG 3 - QWEN 2511 TAO NEN",
+      "bounding": [
+        1140,
+        -160,
+        1460,
+        920
+      ],
+      "color": "#8A8",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "links_added_by_ue": [],
+    "ue_links": [],
+    "pixaromaGroups": [],
+    "0246.VERSION": [
+      0,
+      0,
+      4
+    ],
+    "frontendVersion": "1.23.0",
+    "ds": {
+      "scale": 0.9646149645000015,
+      "offset": [
+        795.595353996902,
+        322.2535373631846
+      ]
+    },
+    "KKvideo_latentpreview": false,
+    "KKvideo_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true,
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0
+  },
+  "version": 0.4
+}

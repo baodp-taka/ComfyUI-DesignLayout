@@ -1,0 +1,362 @@
+{
+  "2": {
+    "class_type": "PrimitiveStringMultiline",
+    "inputs": {
+      "value": "Poster khai trương quán cà phê phong cách vintage ấm cúng, tên quán \"Mộc Coffee\", giảm 30% tuần đầu, khai trương thứ Bảy 12/10, địa chỉ 123 Bạch Đằng, Đà Nẵng"
+    },
+    "_meta": {
+      "title": "1. YEU CAU (ngon ngu tu nhien)"
+    }
+  },
+  "3": {
+    "class_type": "PrimitiveStringMultiline",
+    "inputs": {
+      "value": "You are an art director. Plan a design as (1) a text-free background image and\n(2) the TEXT CONTENT with intent. You do NOT choose positions, sizes, fonts or\ncolors — a layout engine does that. Reply with ONE JSON object only (no\nmarkdown, no comments).\n\nSchema:\n{\"language\":\"vietnamese|latin|...\",\n \"mood\":\"vintage|elegant|playful|minimal|bold|festive\",\n \"design_type\":\"poster|banner|invitation|logo|social\",\n \"composition_hint\":\"auto|top_headline|bottom_band|center_stack|left_column|right_column|frame_border|split_diagonal|badge_focus\",\n \"background_prompt\":\"...\",\n \"background_color\":\"#RRGGBB\",\n \"texts\":[{\"role\":\"headline|subheadline|emphasis|body|detail|note\",\n           \"text\":\"...\",\"priority\":1}]}\n\nRULES\n- language: the script of the text you write (match the user's words).\n- mood + design_type: infer from the request; they steer fonts and layout.\n- composition_hint: usually \"auto\" (the engine picks). Choose a specific one\n  only if the user clearly asks for that arrangement. Use \"badge_focus\" when a\n  discount / number should pop (put that number as role \"emphasis\").\n- texts: every piece the design needs, each ONE short line, in the user's exact\n  words. Roles by importance: headline (main), subheadline (support), emphasis\n  (a number/word to highlight), body, detail (date/place/price), note (fine\n  print). priority 1 = most important. Do NOT invent positions or sizes.\n- background_color: the dominant color of the background you describe.\n\nBACKGROUND_PROMPT (English, 50-100 words) — sent to an image model that must\nNOT draw any text.\n- Describe only a scene: subject, setting, style, lighting, colors, mood.\n- Leave calm, empty negative space where text will sit; keep the subject away\n  from the edges/top/bottom so text is readable.\n- NEVER use these words (they make the model draw letters): poster, flyer,\n  banner, card, invitation, sign, signage, menu, label, logo, cover, headline,\n  title, typography, text, letters, words, font, caption, billboard, brochure,\n  advertisement, storefront, quote, slogan. Say illustration, scene, backdrop\n  or photograph instead.\n\nExample request: Poster khai trương quán cà phê vintage \"Mộc Coffee\", giảm 30%\ntuần đầu, thứ Bảy 12/10, 123 Bạch Đằng Đà Nẵng\nExample answer:\n{\"language\":\"vietnamese\",\"mood\":\"vintage\",\"design_type\":\"poster\",\"composition_hint\":\"auto\",\"background_prompt\":\"A cozy vintage coffee shop interior photograph, a warm wooden counter with a copper espresso machine and ceramic cups in the middle of the frame, soft golden pendant light, gentle film grain, warm brown and cream palette. The upper third is a smooth plain dark brown wall with nothing on it and the lower fifth is a calm empty wooden tabletop in soft shadow.\",\"background_color\":\"#3B2618\",\"texts\":[{\"role\":\"headline\",\"text\":\"MỘC COFFEE\",\"priority\":1},{\"role\":\"subheadline\",\"text\":\"KHAI TRƯƠNG · GIẢM 30% TUẦN ĐẦU\",\"priority\":2},{\"role\":\"detail\",\"text\":\"Thứ Bảy 12/10 · 123 Bạch Đằng, Đà Nẵng\",\"priority\":3}]}\n\nRequest:\n"
+    },
+    "_meta": {
+      "title": "System prompt lap ke hoach (khong can sua)"
+    }
+  },
+  "5": {
+    "class_type": "PreviewAny",
+    "inputs": {
+      "source": [
+        "35",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "KET QUA LLM"
+    }
+  },
+  "14": {
+    "class_type": "UnetLoaderGGUF",
+    "inputs": {
+      "unet_name": "qwen-image-edit-2511-Q4_K_M.gguf"
+    },
+    "_meta": {
+      "title": "UnetLoaderGGUF"
+    }
+  },
+  "15": {
+    "class_type": "LoraLoaderModelOnly",
+    "inputs": {
+      "model": [
+        "14",
+        0
+      ],
+      "lora_name": "Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors",
+      "strength_model": 1.0000000000000002
+    },
+    "_meta": {
+      "title": "LoraLoaderModelOnly"
+    }
+  },
+  "16": {
+    "class_type": "ModelSamplingAuraFlow",
+    "inputs": {
+      "model": [
+        "15",
+        0
+      ],
+      "shift": 3.0000000000000004,
+      "sampling": "flow"
+    },
+    "_meta": {
+      "title": "ModelSamplingAuraFlow"
+    }
+  },
+  "18": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "type": "qwen_image",
+      "device": "default"
+    },
+    "_meta": {
+      "title": "CLIPLoader"
+    }
+  },
+  "19": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    },
+    "_meta": {
+      "title": "VAELoader"
+    }
+  },
+  "20": {
+    "class_type": "TextEncodeQwenImageEditPlus",
+    "inputs": {
+      "clip": [
+        "18",
+        0
+      ],
+      "vae": [
+        "19",
+        0
+      ],
+      "image1": [
+        "28",
+        0
+      ],
+      "prompt": [
+        "28",
+        3
+      ]
+    },
+    "_meta": {
+      "title": "TEXT ENCODER NEN"
+    }
+  },
+  "21": {
+    "class_type": "ConditioningZeroOut",
+    "inputs": {
+      "conditioning": [
+        "20",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "Negative rong"
+    }
+  },
+  "22": {
+    "class_type": "EmptySD3LatentImage",
+    "inputs": {
+      "width": [
+        "28",
+        5
+      ],
+      "height": [
+        "28",
+        6
+      ],
+      "batch_size": 1
+    },
+    "_meta": {
+      "title": "Nen (tu dong theo WIDTH/HEIGHT)"
+    }
+  },
+  "23": {
+    "class_type": "KSampler",
+    "inputs": {
+      "model": [
+        "16",
+        0
+      ],
+      "positive": [
+        "20",
+        0
+      ],
+      "negative": [
+        "21",
+        0
+      ],
+      "latent_image": [
+        "22",
+        0
+      ],
+      "seed": 149987500028749,
+      "steps": 4,
+      "cfg": 1,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1
+    },
+    "_meta": {
+      "title": "4. KSAMPLER NEN"
+    }
+  },
+  "24": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "23",
+        0
+      ],
+      "vae": [
+        "19",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "VAEDecode"
+    }
+  },
+  "25": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "24",
+        0
+      ],
+      "filename_prefix": "background"
+    },
+    "_meta": {
+      "title": "5. LUU NEN (khong chu)"
+    }
+  },
+  "27": {
+    "class_type": "DesignJSONParse",
+    "inputs": {
+      "llm_output": [
+        "35",
+        0
+      ]
+    },
+    "_meta": {
+      "title": "1. Parse JSON"
+    }
+  },
+  "28": {
+    "class_type": "DesignLayoutEngine",
+    "inputs": {
+      "design_spec": [
+        "27",
+        0
+      ],
+      "fonts_dir": "fonts",
+      "canvas_width": [
+        "31",
+        0
+      ],
+      "canvas_height": [
+        "32",
+        0
+      ],
+      "bg_width": 0,
+      "bg_height": 0,
+      "seed": 0,
+      "composition": "auto",
+      "guide_mode": "flat",
+      "feather_px": 24,
+      "zone_padding": 18,
+      "background_prompt": [
+        "27",
+        1
+      ]
+    },
+    "_meta": {
+      "title": "2. Layout Engine"
+    }
+  },
+  "29": {
+    "class_type": "DesignZoneCheck",
+    "inputs": {
+      "background": [
+        "24",
+        0
+      ],
+      "layout_json": [
+        "28",
+        2
+      ],
+      "fonts_dir": "fonts",
+      "busy_threshold": 0.18,
+      "min_contrast": 4.5
+    },
+    "_meta": {
+      "title": "6. Zone Check"
+    }
+  },
+  "30": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "29",
+        1
+      ],
+      "filename_prefix": "design"
+    },
+    "_meta": {
+      "title": "7. THIET KE CUOI (anh co chu)"
+    }
+  },
+  "31": {
+    "class_type": "PrimitiveInt",
+    "inputs": {
+      "value": 1080
+    },
+    "_meta": {
+      "title": "WIDTH (kich thuoc thiet ke)"
+    }
+  },
+  "32": {
+    "class_type": "PrimitiveInt",
+    "inputs": {
+      "value": 1080
+    },
+    "_meta": {
+      "title": "HEIGHT (kich thuoc thiet ke)"
+    }
+  },
+  "33": {
+    "class_type": "PreviewAny",
+    "inputs": {
+      "source": [
+        "28",
+        7
+      ]
+    },
+    "_meta": {
+      "title": "Canh bao layout"
+    }
+  },
+  "34": {
+    "class_type": "CLIPLoader",
+    "inputs": {
+      "clip_name": "qwen3.5_2b_bf16.safetensors",
+      "type": "stable_diffusion",
+      "device": "default"
+    },
+    "_meta": {
+      "title": "LLM (Qwen3.5-2B)"
+    }
+  },
+  "35": {
+    "class_type": "TextGenerate",
+    "inputs": {
+      "clip": [
+        "34",
+        0
+      ],
+      "prompt": [
+        "36",
+        0
+      ],
+      "max_length": 1024,
+      "sampling_mode": "on",
+      "sampling_mode.temperature": 0.4,
+      "sampling_mode.top_k": 64,
+      "sampling_mode.top_p": 0.9,
+      "sampling_mode.min_p": 0.05,
+      "sampling_mode.repetition_penalty": 1.05,
+      "sampling_mode.seed": 0,
+      "sampling_mode.presence_penalty": 0.0,
+      "thinking": false,
+      "use_default_template": true
+    },
+    "_meta": {
+      "title": "2. LLM LAP KE HOACH (Generate Text)"
+    }
+  },
+  "36": {
+    "class_type": "StringConcatenate",
+    "inputs": {
+      "string_a": [
+        "3",
+        0
+      ],
+      "string_b": [
+        "2",
+        0
+      ],
+      "delimiter": "\n"
+    },
+    "_meta": {
+      "title": "System prompt + yeu cau"
+    }
+  }
+}

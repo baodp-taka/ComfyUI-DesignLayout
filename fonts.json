@@ -1,0 +1,1520 @@
+{
+  "version": 1,
+  "style_groups": [
+    "display",
+    "serif",
+    "sans",
+    "script",
+    "decorative",
+    "other",
+    "uncategorized"
+  ],
+  "fonts": [
+    {
+      "file": "AmaticSC-Regular.ttf",
+      "family": "Amatic SC",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Arenq.otf",
+      "family": "Arenq",
+      "group": "decorative",
+      "languages": []
+    },
+    {
+      "file": "Barrio-Regular.otf",
+      "family": "Barrio",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Bistro Sans Bold.otf",
+      "family": "Bistro",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Blackout Sunrise.ttf",
+      "family": "Blackout",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Blackout Two AM.ttf",
+      "family": "Blackout",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Brain Flower.ttf",
+      "family": "Brain Flower",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Canter Bold 3D.otf",
+      "family": "Canter",
+      "group": "decorative",
+      "languages": []
+    },
+    {
+      "file": "Canter Bold Strips.otf",
+      "family": "Canter",
+      "group": "decorative",
+      "languages": []
+    },
+    {
+      "file": "Champignon alt swash.ttf",
+      "family": "Champignon Alt Swash",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "ffont1.ttf",
+      "family": "ffont1",
+      "group": "decorative",
+      "languages": []
+    },
+    {
+      "file": "ffont11.ttf",
+      "family": "ffont11",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont12.ttf",
+      "family": "ffont12",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont15.ttf",
+      "family": "ffont15",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont16.ttf",
+      "family": "ffont16",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont17.ttf",
+      "family": "ffont17",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont19.ttf",
+      "family": "ffont19",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont2.ttf",
+      "family": "ffont2",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont20.ttf",
+      "family": "ffont20",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont22.ttf",
+      "family": "ffont22",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont23.ttf",
+      "family": "ffont23",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont24.ttf",
+      "family": "ffont24",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont27.ttf",
+      "family": "ffont27",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont28.ttf",
+      "family": "ffont28",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "ffont29.ttf",
+      "family": "ffont29",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont30.ttf",
+      "family": "ffont30",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont31.ttf",
+      "family": "ffont31",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont32.ttf",
+      "family": "ffont32",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont33.ttf",
+      "family": "ffont33",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "ffont34.ttf",
+      "family": "ffont34",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "ffont35.ttf",
+      "family": "ffont35",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "cyrillic"
+      ]
+    },
+    {
+      "file": "ffont36.ttf",
+      "family": "ffont36",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont37.ttf",
+      "family": "ffont37",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont40.ttf",
+      "family": "ffont40",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont42.ttf",
+      "family": "ffont42",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont43.ttf",
+      "family": "ffont43",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont51.ttf",
+      "family": "ffont51",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "ffontt12.ttf",
+      "family": "ffontt12",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffontt14.ttf",
+      "family": "ffontt14",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffontt15.ttf",
+      "family": "ffontt15",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffontt20.ttf",
+      "family": "ffontt20",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "ffontt23.TTF",
+      "family": "ffontt23",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffontt27.ttf",
+      "family": "ffontt27",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "ffontt32.ttf",
+      "family": "ffontt32",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffontt35.ttf",
+      "family": "ffontt35",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffontt36.ttf",
+      "family": "ffontt36",
+      "group": "decorative",
+      "languages": []
+    },
+    {
+      "file": "ffontt37.ttf",
+      "family": "ffontt37",
+      "group": "decorative",
+      "languages": []
+    },
+    {
+      "file": "ffontt38.ttf",
+      "family": "ffontt38",
+      "group": "decorative",
+      "languages": []
+    },
+    {
+      "file": "ffontt39.ttf",
+      "family": "ffontt39",
+      "group": "decorative",
+      "languages": []
+    },
+    {
+      "file": "FontMain.ttf",
+      "family": "KG Red Hands",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Fram.otf",
+      "family": "Fram L",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "cyrillic",
+        "greek"
+      ]
+    },
+    {
+      "file": "Good Dog.otf",
+      "family": "GoodDog",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Goon.otf",
+      "family": "Goon",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Haymaker.ttf",
+      "family": "Haymaker",
+      "group": "decorative",
+      "languages": []
+    },
+    {
+      "file": "Hello Beautiful Marker.otf",
+      "family": "Hello Beautiful",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Homestead-Display.ttf",
+      "family": "Homestead",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Joyful Juliana.ttf",
+      "family": "Joyful Juliana",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "cyrillic",
+        "greek"
+      ]
+    },
+    {
+      "file": "JUICE Bold Italic.ttf",
+      "family": "KG Red Hands",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Kautiva Pro Black Italic.otf",
+      "family": "Kautiva Pro",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "cyrillic",
+        "greek"
+      ]
+    },
+    {
+      "file": "knewave.otf",
+      "family": "Knewave",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Mathlete-Bulky.otf",
+      "family": "Mathlete",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Metria.ttf",
+      "family": "Metria",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Metropolis 1920.otf",
+      "family": "Metropolis 1920",
+      "group": "decorative",
+      "languages": [
+        "cyrillic"
+      ]
+    },
+    {
+      "file": "Moka regular.otf",
+      "family": "Vagabond Revised",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Monoton-Regular.ttf",
+      "family": "Monoton",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "NEORD___.ttf",
+      "family": "NeoRetroDraw",
+      "group": "decorative",
+      "languages": []
+    },
+    {
+      "file": "Nordic Alternative Regular.ttf",
+      "family": "Nordic Alternative",
+      "group": "decorative",
+      "languages": []
+    },
+    {
+      "file": "ONEDAY.otf",
+      "family": "ONE DAY",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "provence.otf",
+      "family": "Fontastique Carved",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Quicksand_Dash.otf",
+      "family": "Quicksand",
+      "group": "decorative",
+      "languages": []
+    },
+    {
+      "file": "Quirky Nots.otf",
+      "family": "Quirky Nots",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Vagabond_Revised.otf",
+      "family": "Vagabond Revised",
+      "group": "decorative",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Vetka.otf",
+      "family": "Vetka",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "cyrillic"
+      ]
+    },
+    {
+      "file": "Walter.TTF",
+      "family": "Walter",
+      "group": "decorative",
+      "languages": []
+    },
+    {
+      "file": "Captain Redemption.ttf",
+      "family": "Captain Redemption ",
+      "group": "display",
+      "languages": []
+    },
+    {
+      "file": "Awesombrosa Black.otf",
+      "family": "Awesombrosa",
+      "group": "other",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "ffont3.ttf",
+      "family": "Academy Engraved LET",
+      "group": "other",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont5.ttf",
+      "family": "ffont5",
+      "group": "other",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Japanese Font.ttf",
+      "family": "Rounded Mplus 1c Medium",
+      "group": "other",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese",
+        "japanese_kana",
+        "cyrillic",
+        "greek",
+        "hebrew"
+      ]
+    },
+    {
+      "file": "Korean Font.ttf",
+      "family": "Do Hyeon",
+      "group": "other",
+      "languages": [
+        "latin",
+        "korean_hangul"
+      ]
+    },
+    {
+      "file": "Langdon.otf",
+      "family": "Langdon",
+      "group": "other",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Lumberjack_New_jane.otf",
+      "family": "Lumberjack New",
+      "group": "other",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "QUIGLEYW.TTF",
+      "family": "QuigleyWiggly",
+      "group": "other",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "True Lies.ttf",
+      "family": "True Lies",
+      "group": "other",
+      "languages": []
+    },
+    {
+      "file": "Vietnamese Font.ttf",
+      "family": "Baloo Thambi 2",
+      "group": "other",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese"
+      ]
+    },
+    {
+      "file": "128 CAI978.ttf",
+      "family": "128-CAI978",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Aafia.otf",
+      "family": "True North Black",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "American Captain.otf",
+      "family": "American Captain",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "aqua.ttf",
+      "family": "Aqua Grotesque",
+      "group": "sans",
+      "languages": []
+    },
+    {
+      "file": "Bebas Neue.otf",
+      "family": "Bebas Neue",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "BEBAS.ttf",
+      "family": "Bebas",
+      "group": "sans",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "BebasNeue Light.otf",
+      "family": "Bebas Neue",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "cyrillic"
+      ]
+    },
+    {
+      "file": "Blanch caps inline.otf",
+      "family": "Blanch",
+      "group": "sans",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Canter Light.otf",
+      "family": "Canter",
+      "group": "sans",
+      "languages": []
+    },
+    {
+      "file": "Comfortaa-Bold.ttf",
+      "family": "Comfortaa",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "cyrillic",
+        "greek"
+      ]
+    },
+    {
+      "file": "Comfortaa-Regular.ttf",
+      "family": "Comfortaa",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "cyrillic",
+        "greek"
+      ]
+    },
+    {
+      "file": "ffont10.ttf",
+      "family": "ffont10",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont18.ttf",
+      "family": "ffont18",
+      "group": "sans",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "ffont21.ttf",
+      "family": "ffont21",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont25.ttf",
+      "family": "Impact",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "cyrillic",
+        "greek"
+      ]
+    },
+    {
+      "file": "ffont26.ttf",
+      "family": "ffont26",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont47.ttf",
+      "family": "ffont47",
+      "group": "sans",
+      "languages": []
+    },
+    {
+      "file": "ffont48.ttf",
+      "family": "ffont48",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont8.otf",
+      "family": "AdamGorry-Inline",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffontt16.ttf",
+      "family": "ffontt16",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffontt2.ttf",
+      "family": "ffontt2",
+      "group": "sans",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "ffontt24.ttf",
+      "family": "ffontt24",
+      "group": "sans",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "ffontt4.ttf",
+      "family": "Code Saver",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "GeosansLight.ttf",
+      "family": "GeosansLight",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Intro Inline.otf",
+      "family": "Intro Inline",
+      "group": "sans",
+      "languages": [
+        "cyrillic"
+      ]
+    },
+    {
+      "file": "LeagueGothic-Italic.otf",
+      "family": "League Gothic",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "LeagueGothic-Regular.otf",
+      "family": "League Gothic",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Liberator.otf",
+      "family": "Liberator",
+      "group": "sans",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Lombok.otf",
+      "family": "Lombok",
+      "group": "sans",
+      "languages": []
+    },
+    {
+      "file": "Market_Deco.ttf",
+      "family": "Market Deco",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "cyrillic",
+        "greek"
+      ]
+    },
+    {
+      "file": "MavenProLight-100.otf",
+      "family": "Maven Pro Light",
+      "group": "sans",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Neusa.otf",
+      "family": "Neusa",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "cyrillic"
+      ]
+    },
+    {
+      "file": "Ostrich Bold.ttf",
+      "family": "Ostrich Sans",
+      "group": "sans",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Ostrich Rounded.ttf",
+      "family": "Ostrich Sans Rounded",
+      "group": "sans",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "ProximaNova-Semibold.otf",
+      "family": "Proxima Nova",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Ribbon_V2_2011.otf",
+      "family": "Ribbon",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Roboto-Light.ttf",
+      "family": "Roboto",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese",
+        "cyrillic",
+        "greek"
+      ]
+    },
+    {
+      "file": "Roboto-Thin.ttf",
+      "family": "Roboto",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese",
+        "cyrillic",
+        "greek"
+      ]
+    },
+    {
+      "file": "Sequi_regular.otf",
+      "family": "Sequi",
+      "group": "sans",
+      "languages": []
+    },
+    {
+      "file": "Torque Sense.otf",
+      "family": "Torque Sense",
+      "group": "sans",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "True North Black.otf",
+      "family": "True North Black",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Venera-900.otf",
+      "family": "Venera",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "always forever.ttf",
+      "family": "Unicorn Calligraphy",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Aspire Demi Bold.ttf",
+      "family": "Aspire",
+      "group": "script",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Celestial.otf",
+      "family": "Celestial",
+      "group": "script",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "ffontt1.ttf",
+      "family": "ffontt1",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffontt30.ttf",
+      "family": "Space Craft",
+      "group": "script",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "ffontt6.ttf",
+      "family": "Affectionately Yours",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "GreatVibes-Regular.otf",
+      "family": "Great Vibes",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "JennaSue.ttf",
+      "family": "Silver Pen",
+      "group": "script",
+      "languages": []
+    },
+    {
+      "file": "Lavanderia Delicate.otf",
+      "family": "Olivia",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Lavanderia Regular.otf",
+      "family": "Olivia",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Lavanderia sturdy.otf",
+      "family": "Olivia",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "LearningCurve_OT.otf",
+      "family": "Learning Curve Pro",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "LearningCurve_OTF.otf",
+      "family": "Learning Curve Pro",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Lobster 1.4.otf",
+      "family": "Lobster 1.4",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Masana Grata.otf",
+      "family": "Gaston Demo",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Masana Propia.otf",
+      "family": "Gaston Demo",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Mission-Script.otf",
+      "family": "Mission Script",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Overd font wanderlust regular.ttf",
+      "family": "Shedaytia",
+      "group": "script",
+      "languages": []
+    },
+    {
+      "file": "Pacifico.ttf",
+      "family": "Pacifico",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Sofia regular.otf",
+      "family": "Sofia",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Windsong.ttf",
+      "family": "Callme Script",
+      "group": "script",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Wisdom Script.otf",
+      "family": "Wisdom Script AI",
+      "group": "script",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "aachenb.ttf",
+      "family": "Aachen",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese"
+      ]
+    },
+    {
+      "file": "Brassie regular.otf",
+      "family": "Brassie",
+      "group": "serif",
+      "languages": []
+    },
+    {
+      "file": "Chunkfive.otf",
+      "family": "ChunkFive",
+      "group": "serif",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "ffont13.ttf",
+      "family": "ffont13",
+      "group": "serif",
+      "languages": []
+    },
+    {
+      "file": "ffont14.ttf",
+      "family": "ffont14",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont38.ttf",
+      "family": "ffont38",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont4.ttf",
+      "family": "ffont4",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont44.ttf",
+      "family": "ffont44",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont45.ttf",
+      "family": "ffont45",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont49.ttf",
+      "family": "ffont49",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont50.ttf",
+      "family": "ffont50",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont6.ttf",
+      "family": "ffont6",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffont9.ttf",
+      "family": "ffont9",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffontt26.ttf",
+      "family": "ffontt26",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffontt3.ttf",
+      "family": "ffontt3",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffontt5.ttf",
+      "family": "ffontt5",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffontt8.ttf",
+      "family": "Pirata One",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "ffontt9.ttf",
+      "family": "ffontt9",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Freshman.ttf",
+      "family": "Freshman",
+      "group": "serif",
+      "languages": []
+    },
+    {
+      "file": "Museo Slab.otf",
+      "family": "Museo Slab 500",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "MuseoSans_300.otf",
+      "family": "Museo Sans",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Phantom Shadow Serif Demo.otf",
+      "family": "Phantom Shadow Serif Demo",
+      "group": "serif",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "TheanoDidot-Regular.ttf",
+      "family": "Theano Didot",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "greek"
+      ]
+    },
+    {
+      "file": "Trend Slab.otf",
+      "family": "Trend HM Slab",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext"
+      ]
+    },
+    {
+      "file": "Coraline_s Cat.ttf",
+      "family": "Coraline's Cat",
+      "group": "uncategorized",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "HauntedHillRegular-Regular.otf",
+      "family": "Haunted Hill Regular",
+      "group": "uncategorized",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "Hungry Hunters.ttf",
+      "family": "Hungry Hunters",
+      "group": "uncategorized",
+      "languages": []
+    },
+    {
+      "file": "Melted Monster.ttf",
+      "family": "Melted Monster",
+      "group": "uncategorized",
+      "languages": [
+        "latin"
+      ]
+    },
+    {
+      "file": "scary-vodoo-demo.regular.otf",
+      "family": "Scary Vodoo DEMO",
+      "group": "uncategorized",
+      "languages": []
+    }
+  ]
+}
