@@ -6,43 +6,40 @@ background up to the canvas and draws the design on top; `debug_preview` draws
 on a plain background_color canvas with zone outlines for quick inspection.
 """
 from __future__ import annotations
-from typing import Dict, List
-from PIL import Image, ImageDraw
+from typing import Dict, List, Tuple
+from PIL import Image, ImageDraw, ImageFilter
 
 from . import measure
 from .fonts import FontRegistry
-from .colors import hex_to_rgb
+from .colors import hex_to_rgb, rel_luminance
 
 
 def _draw_runs(draw: ImageDraw.ImageDraw, reg: FontRegistry, text: str,
                primary: str, language: str, size: int, ls_px: float,
-               x: float, y_top: float, fill, shadow: bool,
-               outline_w: int, outline_c) -> None:
+               x: float, y_top: float, fill, stroke_w: int = 0,
+               stroke_fill=None) -> None:
+    """Draw one line char-by-char (letter spacing + per-glyph font fallback)."""
     runs = measure.build_runs(reg, text, primary, language)
-    sh = max(2, int(size * 0.045))
     cx = x
     for file, sub in runs:
         font = measure.get_font(reg, file, size)
         for ch in sub:
-            if shadow:
-                draw.text((cx + sh, y_top + sh), ch, font=font,
-                          fill=(0, 0, 0), anchor="la")
-            if outline_w > 0:
-                draw.text((cx, y_top), ch, font=font, fill=outline_c,
-                          anchor="la", stroke_width=outline_w,
-                          stroke_fill=outline_c)
+            if stroke_w > 0:
+                draw.text((cx, y_top), ch, font=font, fill=stroke_fill,
+                          anchor="la", stroke_width=stroke_w,
+                          stroke_fill=stroke_fill)
             draw.text((cx, y_top), ch, font=font, fill=fill, anchor="la")
             cx += font.getlength(ch) + ls_px
 
 
-def draw_block(draw: ImageDraw.ImageDraw, reg: FontRegistry, block: Dict,
-               language: str) -> None:
+def _line_positions(reg: FontRegistry, block: Dict,
+                    language: str) -> List[Tuple[str, float, float]]:
+    """(line, x, y_top) for every line of the block, honoring align/valign."""
     box = block["box"]
     size = int(block["size_px"])
     primary = block["font"]
     ls_px = block.get("letter_spacing", 0.0) * size
     lines: List[str] = block.get("lines") or [block["text"]]
-    fill = hex_to_rgb(block.get("color", "#FFFFFF"))
     asc, desc = measure.line_metrics(reg, primary, size)
     lh = (asc + desc) * block.get("line_height", 1.15)
     y = box["y"]
@@ -50,6 +47,7 @@ def draw_block(draw: ImageDraw.ImageDraw, reg: FontRegistry, block: Dict,
         y = box["y"] + (box["h"] - lh * len(lines)) / 2.0
     elif block.get("valign") == "bottom":
         y = box["y"] + box["h"] - lh * len(lines)
+    out = []
     for ln in lines:
         w = measure.line_width(reg, ln, primary, language, size, ls_px)
         if block.get("align") == "left":
@@ -58,10 +56,50 @@ def draw_block(draw: ImageDraw.ImageDraw, reg: FontRegistry, block: Dict,
             x = box["x"] + box["w"] - w
         else:
             x = box["x"] + (box["w"] - w) / 2.0
-        _draw_runs(draw, reg, ln, primary, language, size, ls_px, x, y, fill,
-                   block.get("shadow", False), block.get("outline_width", 0),
-                   hex_to_rgb(block.get("outline_color", "#000000")))
+        out.append((ln, x, y))
         y += lh
+    return out
+
+
+def shadow_style(fill, size: int) -> Tuple[Tuple[int, int, int], int, int,
+                                          float]:
+    """(color, alpha 0-255, offset px, blur radius) adapted to the text color.
+
+    Light text -> soft dark drop shadow (slight offset). Dark text -> soft
+    light glow with NO offset: a dark offset copy under dark text reads as a
+    doubled/ghosted second layer instead of depth.
+    """
+    if rel_luminance(fill) > 0.45:
+        return (0, 0, 0), 150, max(1, round(size * 0.025)), max(1.0, size * 0.035)
+    return (255, 255, 255), 170, 0, max(2.0, size * 0.05)
+
+
+def draw_block(img: Image.Image, reg: FontRegistry, block: Dict,
+               language: str) -> Image.Image:
+    """Draw a text block onto `img` (RGB); returns the new image."""
+    size = int(block["size_px"])
+    primary = block["font"]
+    ls_px = block.get("letter_spacing", 0.0) * size
+    fill = hex_to_rgb(block.get("color", "#FFFFFF"))
+    positions = _line_positions(reg, block, language)
+
+    if block.get("shadow"):
+        col, alpha, off, blur = shadow_style(fill, size)
+        mask = Image.new("L", img.size, 0)
+        md = ImageDraw.Draw(mask)
+        for ln, x, y in positions:
+            _draw_runs(md, reg, ln, primary, language, size, ls_px,
+                       x + off, y + off, alpha)
+        mask = mask.filter(ImageFilter.GaussianBlur(blur))
+        img = Image.composite(Image.new("RGB", img.size, col), img, mask)
+
+    draw = ImageDraw.Draw(img)
+    ow = int(block.get("outline_width", 0))
+    oc = hex_to_rgb(block.get("outline_color", "#000000"))
+    for ln, x, y in positions:
+        _draw_runs(draw, reg, ln, primary, language, size, ls_px, x, y, fill,
+                   stroke_w=ow, stroke_fill=oc)
+    return img
 
 
 def draw_shapes(draw: ImageDraw.ImageDraw, layout: Dict) -> None:
@@ -106,9 +144,8 @@ def render_design(base: Image.Image, layout: Dict, reg: FontRegistry) -> Image.I
     draw = ImageDraw.Draw(img)
     draw_shapes(draw, layout)
     img = _draw_scrims(img, layout)          # translucent plates behind text
-    draw = ImageDraw.Draw(img)
     for block in layout.get("blocks", []):
-        draw_block(draw, reg, block, language)
+        img = draw_block(img, reg, block, language)
     return img
 
 
