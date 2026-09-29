@@ -62,8 +62,12 @@ def _palette(region: np.ndarray, k: int = 5, iters: int = 8) -> List[Tuple[int, 
 
 
 def check(background: Image.Image, layout: Dict, busy_threshold: float = 0.18,
-          min_contrast: float = 4.5) -> Tuple[Dict, List[str]]:
-    """Return (updated_layout, report_lines). Mutates a copy of layout."""
+          min_contrast: float = 4.5,
+          allow_scrim: bool = True) -> Tuple[Dict, List[str]]:
+    """Return (updated_layout, report_lines). Mutates a copy of layout.
+
+    allow_scrim=False: never add the translucent plate (the image-first flow
+    defocuses the scene behind each line instead)."""
     cw, ch = layout["canvas"]["w"], layout["canvas"]["h"]
     img = np.asarray(background.convert("RGB").resize((cw, ch)), dtype=np.uint8)
     report: List[str] = []
@@ -115,7 +119,7 @@ def check(background: Image.Image, layout: Dict, busy_threshold: float = 0.18,
 
         if busy >= busy_threshold and not b.get("outline_width"):
             b["shadow"] = True
-            if busy >= busy_threshold * 2 and not b.get("scrim"):
+            if allow_scrim and busy >= busy_threshold * 2                     and not b.get("scrim"):
                 dark = rel_luminance(mean_rgb) > 0.5
                 scrim_rgb = (0, 0, 0) if not dark else (255, 255, 255)
                 b["scrim"] = {"color": rgb_to_hex(scrim_rgb), "opacity": 0.35,

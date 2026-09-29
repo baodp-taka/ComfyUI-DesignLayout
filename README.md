@@ -78,6 +78,26 @@ Generate Text (core, Qwen3-4B + system prompt) ─▶ JSON nội dung
 - Đo độ rối (Sobel — OpenCV, fallback numpy), trích palette (k-means numpy),
   chọn màu chữ đạt tương phản WCAG; vùng rối → bật shadow/scrim.
 
+### DesignLayoutFromImage (luồng image-first, khuyến nghị)
+Chọn bố cục **sau khi đã có ảnh nền**, giống cách designer làm:
+1. Sinh nền **tự do** (không guide, không mask) → ảnh tự nhiên.
+2. Node chấm điểm mọi template hợp `design_type` + khổ ảnh theo **độ rối
+   dưới từng dòng chữ** (50% trung bình + 50% đoạn tệ nhất trên dòng, cộng độ
+   lệch sáng tối), chọn chỗ thoáng nhất; trong các ứng viên cách tốt nhất
+   ≤ 15% thì seed quyết định. Template có tấm nền bị loại (giữ ảnh tự nhiên).
+3. **Xoá phông** quanh từng dòng, mạnh/nhẹ theo độ rối — không dùng scrim xám.
+4. Chỉnh màu chữ trên nền đã xử lý rồi ghép chữ.
+
+- **In:** `background` (IMAGE sau VAEDecode), `design_spec`, `fonts_dir`,
+  `canvas_width/height`, `seed`, `composition` (`auto` = chấm điểm; tên
+  template = ép), `candidates` (0 = tất cả), `defocus` (0 tắt · 1 mặc định ·
+  2 mạnh), `min_contrast`.
+- **Ra:** `final_json`, `composite_preview`, `background_treated` (nền đã xoá
+  phông — **app tự vẽ chữ thì dùng ảnh này làm nền**), `layout_json`,
+  `report` (điểm từng template + mức xoá phông từng dòng).
+- Kích thước latent: tính từ tỉ lệ canvas (~1MP, bội 16) như
+  `guide.auto_bg_size`; không cần `DesignLayoutEngine` / `DesignZoneCheck`.
+
 ## Tham số bố cục chính
 
 | Tham số | Ý nghĩa |

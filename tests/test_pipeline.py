@@ -434,3 +434,54 @@ def test_balanced_and_phrase_aware_wrapping():
                           max_w=845, max_h=10 ** 9, target_size=157,
                           ls_frac=0.02, max_lines=2)
     assert f["lines"] == ["Minh & Lan"]                      # 1 line, a bit smaller
+
+
+# ---- image-first layout ------------------------------------------------------
+def _half_busy(cw, ch, busy_side="left"):
+    """Noise (busy) on one half, flat color on the other."""
+    rng = np.random.default_rng(0)
+    a = np.full((ch, cw, 3), 200, np.uint8)
+    noise = rng.integers(0, 255, (ch, cw // 2, 3), np.uint8)
+    if busy_side == "left":
+        a[:, :cw // 2] = noise
+    else:
+        a[:, cw // 2:] = noise
+    return Image.fromarray(a)
+
+
+@pytest.mark.parametrize("busy_side", ["left", "right"])
+def test_image_fit_puts_text_on_the_calm_side(busy_side):
+    from designlayout import image_fit
+    reg = _reg()
+    cw = ch = 1080
+    spec = {"language": "latin", "mood": "minimal", "design_type": "poster",
+            "background_color": "#C8C8C8",
+            "texts": [{"role": "headline", "text": "CALM SIDE"},
+                      {"role": "detail", "text": "Saturday 12/10"}]}
+    img = _half_busy(cw, ch, busy_side)
+    lay, report, _ = image_fit.fit_layout(reg, spec, img, {"w": cw, "h": ch},
+                                          seed=1)
+    xs = [(b[0] + b[2]) / 2 for b, _, _ in image_fit.line_boxes(reg, lay)]
+    mean_x = sum(xs) / len(xs)
+    if busy_side == "left":
+        assert mean_x > 0.5 * cw, (lay["template"], mean_x)
+    else:
+        assert mean_x < 0.5 * cw, (lay["template"], mean_x)
+
+
+def test_image_fit_pool_has_no_plates_and_defocus_calms():
+    from designlayout import image_fit, compositions
+    spec = {"design_type": "poster",
+            "texts": [{"role": "headline", "text": "HELLO"}]}
+    pool = image_fit.candidate_pool(spec, "square")
+    assert pool and not any(t.get("panel") for t in pool)
+    reg = _reg()
+    img = _half_busy(1080, 1080, "left")
+    lay = LayoutEngine(reg, {"w": 1080, "h": 1080}).layout(
+        dict(spec, language="latin", background_color="#C8C8C8"), seed=1,
+        force_composition="poster.column.left.middle.plain")
+    before = image_fit.ImageStats(img, 1080, 1080)
+    treated = image_fit.defocus_behind_text(reg, lay, img, 1.0)
+    after = image_fit.ImageStats(treated, 1080, 1080)
+    for box, _, _ in image_fit.line_boxes(reg, lay):
+        assert after.box_cost(box)[1] < 0.6 * before.box_cost(box)[1]

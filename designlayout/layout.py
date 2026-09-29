@@ -12,6 +12,8 @@ Coordinates are on the CANVAS (default 1080x1080). The engine:
     node later refines them against the real rendered image).
 """
 from __future__ import annotations
+import random
+import zlib
 from typing import Dict, List, Optional
 
 from . import compositions, measure, decor
@@ -23,6 +25,12 @@ from .colors import (hex_to_rgb, rgb_to_hex, rel_luminance, ensure_contrast,
                      contrast_ratio, parse_hex, WHITE, BLACK)
 
 ACCENT_ROLES = ("subheadline", "emphasis")
+# One typeface per slot for the whole design (designers use 2-3): the display
+# face for headline + emphasis, one for the subheadline, one for small text.
+FONT_SLOT = {"headline": "display", "emphasis": "display",
+             "subheadline": "accent", "body": "text", "detail": "text",
+             "note": "text"}
+SLOT_ORDER = ("display", "accent", "text")
 DEFAULT_ACCENT = (200, 150, 80)   # warm gold when the LLM gives no accent
 DEFAULT_BADGE = (190, 60, 50)
 
@@ -73,6 +81,7 @@ class LayoutEngine:
         bg_rgb = hex_to_rgb(spec.get("background_color", "#2B2B2B"))
         # optional LLM color intent (hue kept, lightness fitted for contrast)
         self.text_intent = self._intent(spec.get("text_color"))
+        self._choose_fonts(texts, language, mood, seed)
         self.accent_intent = self._intent(spec.get("accent_color"))
         blocks: List[Dict] = []
         shapes: List[Dict] = []
@@ -181,6 +190,56 @@ class LayoutEngine:
             "zones": [{"role": b["role"], "box": b["box"]} for b in blocks],
         }
 
+    # ---- font choice ---------------------------------------------------------
+    def _choose_fonts(self, texts: List[Dict], language: str, mood: str,
+                      seed: int) -> None:
+        """Pick the design's typefaces ONCE, before any template is laid out.
+
+        Seeded (same seed -> same fonts) and independent of the template, so
+        the image-first search keeps one look while it tries layouts. Each
+        slot's font must render EVERY line of that slot; slots prefer
+        different faces so headline and body do not share a font.
+        """
+        # mood/language go into the seed so one seed does not map to the same
+        # list position (hence the same first font) in every mood
+        mix = zlib.crc32(f"{mood}|{language}".encode("utf-8"))
+        self._font_rng = random.Random(
+            (int(seed) * 7919 + 101 + mix) & 0xFFFFFFFF)
+        self._font_slots: Dict[tuple, str] = {}
+        for slot in SLOT_ORDER:
+            members = [t for t in texts
+                       if FONT_SLOT.get(t.get("role"), "text") == slot]
+            if not members:
+                continue
+            joined = " ".join(str(t["text"]).strip() for t in members)
+            self._font_for(joined, language, members[0].get("role", "body"),
+                           mood)
+
+    def _font_for(self, text: str, language: str, role: str, mood: str):
+        """(font_file, covered): the slot's font, chosen by weighted seeded
+        draw among the fonts that suit (role, mood) and render `text`."""
+        slot = FONT_SLOT.get(role, "text")
+        key = (slot, language)
+        slots = getattr(self, "_font_slots", None)
+        if slots is None:          # engine used without layout(): legacy path
+            return self.reg.pick(text, language, role, mood)
+        cur = slots.get(key)
+        if cur and self.reg.covers(cur, text) and \
+                self.reg.usable_for(cur, text, role):
+            return cur, True
+        opts = self.reg.choices(text, language, role, mood)
+        if not opts:
+            return self.reg.pick(text, language, role, mood)
+        used = set(slots.values())
+        fresh = [(f, w) for f, w in opts if f not in used]
+        pool = fresh or opts
+        files = [f for f, _ in pool]
+        weights = [w for _, w in pool]
+        pick = self._font_rng.choices(files, weights=weights, k=1)[0]
+        if key not in slots:
+            slots[key] = pick
+        return pick, True
+
     # ---- band fitting -------------------------------------------------------
     def _floor(self, role: str, hard: bool) -> int:
         frac = HARD_MIN_FRAC if hard else MIN_FRAC.get(role, 0.022)
@@ -195,7 +254,7 @@ class LayoutEngine:
         if target is None:
             target = int(role_size_px(role, self.unit) * scale)
         target = max(floor, target)
-        font_file, covered = self.reg.pick(text, language, role, mood)
+        font_file, covered = self._font_for(text, language, role, mood)
         if not covered:
             self.warnings.append(f"{text!r}: no full-coverage font")
         ls = ROLE_LETTER_SPACING.get(role, 0.0)
@@ -537,7 +596,7 @@ class LayoutEngine:
             fw, fh = self.BADGE_TEXT_AREA[shape_kind]
             max_w, max_h, target = r * fw, r * fh, int(r * 0.9 * fh / 1.2)
         text = str(emph["text"]).strip()
-        font_file, _ = self.reg.pick(text, language, "emphasis", mood)
+        font_file, _ = self._font_for(text, language, "emphasis", mood)
         fit = measure.fit_block(self.reg, text, font_file, language,
                                 max_w=max_w, max_h=max_h,
                                 target_size=max(12, target), ls_frac=0.0,
