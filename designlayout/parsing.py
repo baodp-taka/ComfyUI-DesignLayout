@@ -10,6 +10,7 @@ import json
 from typing import Dict, List, Tuple
 
 from .schema import DEFAULTS, ROLES
+from .colors import parse_hex
 
 # words that make the image model draw letters -> swap for a neutral noun
 _SWAP = ["poster", "flyer", "banner", "card", "invitation", "sign", "signage",
@@ -135,7 +136,14 @@ def parse_llm_output(raw: str) -> Tuple[Dict, str, List[str]]:
         "background_color": str(data.get("background_color")
                                 or DEFAULTS["background_color"]),
         "texts": _coerce_texts(data.get("texts")),
+        # optional color intent from the LLM (None = let the engine choose);
+        # the engine keeps the hue and only fits lightness for readability
+        "text_color": parse_hex(data.get("text_color")),
+        "accent_color": parse_hex(data.get("accent_color")),
     }
+    for key in ("text_color", "accent_color"):
+        if data.get(key) and spec[key] is None:
+            warnings.append(f"{key} {data.get(key)!r} is not #RRGGBB; ignored")
     if not spec["texts"]:
         warnings.append("no valid texts in LLM output")
     if spec["language"] != "vietnamese" and looks_vietnamese(spec["texts"]):

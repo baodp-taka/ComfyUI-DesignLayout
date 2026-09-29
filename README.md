@@ -91,25 +91,29 @@ Generate Text (core, Qwen3-4B + system prompt) ─▶ JSON nội dung
 
 ## Kích thước & template theo tỉ lệ khung
 
-`canvas_width/height` quyết định **nhóm tỉ lệ**, mỗi nhóm có bộ template và
-trọng số riêng (`designlayout/compositions.py`: `COMPAT`, `WEIGHTS`):
+`canvas_width/height` quyết định **nhóm tỉ lệ**; cùng với `design_type` nó
+chọn ra bộ template phù hợp trong **thư viện ~200 template**
+(`designlayout/templates.py`, xem mục *Thư viện template*):
 
-| Nhóm | Tỉ lệ w/h | Ví dụ | Template (auto) |
-|---|---|---|---|
-| `tall` | < 0.65 | 1080×1920 (story/reels) | `story_top, story_bottom, top_bottom, center_stack, frame_border, badge_stack` |
-| `portrait` | 0.65–0.9 | 1080×1350, A4 | `top_headline, top_bottom, bottom_band, center_stack, frame_border, split_diagonal, story_bottom, badge_focus` |
-| `square` | 0.9–1.12 | 1080×1080 | `top_headline, center_stack, bottom_band, frame_border, split_diagonal, left_column, right_column, badge_focus` |
-| `landscape` | 1.12–2.1 | 1920×1080, 1200×628 | `left_column, right_column, center_wide, lower_third, split_diagonal, frame_border, top_headline, badge_focus` |
-| `wide` | 2.1–4 | 1500×500, 1584×396 | `wide_left, wide_right, wide_center, wide_badge` |
+| Nhóm | Tỉ lệ w/h | Ví dụ |
+|---|---|---|
+| `tall` | < 0.65 | 1080×1920 (story/reels/shorts) |
+| `portrait` | 0.65–0.9 | 1080×1350, A4 |
+| `square` | 0.9–1.12 | 1080×1080 |
+| `landscape` | 1.12–2.1 | 1920×1080, 1280×720 (thumbnail), 1200×628 |
+| `wide` | 2.1–4 | 1500×500, 1920×640 (banner) |
 
 Tỉ lệ ngoài 1:4 … 4:1 (vd leaderboard 728×90) **không hỗ trợ**: Layout Engine
 báo `ValueError`.
 
-- Template `*badge*` chỉ được chọn tự động khi có chữ `emphasis` (và được cộng
-  trọng số khi có).
-- `composition_hint` từ LLM không hợp tỉ lệ → đổi sang kiểu tương đương
-  (`ALIASES`, vd `left_column` trên khung 9:16 → `story_bottom`) + ghi vào
-  `warnings`.
+- Template có huy hiệu chỉ được chọn tự động khi có chữ `emphasis` (và được
+  cộng trọng số khi có).
+- `composition_hint` từ LLM là **nhóm bố cục** (`top, bottom, center,
+  top_bottom, column, side, split, badge, card, frame`): chỉ là ưu tiên (x4
+  trọng số), engine vẫn chọn template cụ thể theo seed. Tên kiểu cũ
+  (`top_headline`, `badge_focus`...) được hiểu là nhóm tương ứng.
+- Widget `composition` của node ép đúng một kiểu: tên kiểu cũ hoặc id template
+  (vd `wedding.monogram.double_frame`).
 - Lề an toàn, khoảng cách và cỡ chữ co giãn theo cạnh ngắn (cỡ chữ dùng
   `type_unit` = căn(w·h) kẹp trong [cạnh ngắn, 1.25×cạnh ngắn]; banner wide
   được phóng thêm `type_scale`).
@@ -167,24 +171,77 @@ Node phụ thuộc ngoài core: ComfyUI-GGUF (`UnetLoaderGGUF`).
 **Input (LLM)** — xem `prompts/system_prompt.txt`:
 ```json
 {"language":"vietnamese|latin|...","mood":"vintage|elegant|playful|minimal|bold|festive",
- "design_type":"poster|banner|invitation|logo|social",
- "composition_hint":"auto|<tên kiểu>","background_prompt":"...","background_color":"#RRGGBB",
+ "design_type":"poster|banner|thumbnail|invitation|wedding|birthday|social|logo",
+ "composition_hint":"auto|top|bottom|center|top_bottom|column|side|split|badge|card|frame",
+ "background_prompt":"...","background_color":"#RRGGBB",
+ "text_color":"#RRGGBB","accent_color":"#RRGGBB",
  "texts":[{"role":"headline|subheadline|emphasis|body|detail|note","text":"...","priority":1}]}
 ```
 
 **final_json** giữ tương thích schema cũ (`text, role, font, size_px, cx, cy,
 align, color, letter_spacing, shadow, outline_width, outline_color`) + trường
 mới tuỳ chọn (`box, lines, line_height, scrim, shapes, canvas, composition,
-seed`). Việc map sang DTO thật của app nằm gọn trong
+template, palette, seed`). `palette` = màu LLM gợi ý; `color` của từng dòng là
+sắc đó đã chỉnh độ sáng cho đủ tương phản trên ảnh thật. Việc map sang DTO thật của app nằm gọn trong
 `designlayout/schema.py::to_app_json` — sửa đúng một chỗ đó khi có định dạng app.
 
-## Thêm kiểu bố cục mới
+## Thư viện template (~200)
 
-Trong `designlayout/compositions.py`: viết một hàm `ten_kieu(cw, ch, rng)` trả
-về `_base(...)` (định nghĩa 2 dải `primary`/`secondary`, `align`, `valign`,
-tuỳ chọn `p_align`/`s_align`, `emphasis_mode="badge"`/`border`,
-`type_scale`), rồi thêm vào `BUILDERS`, `COMPAT` (các nhóm tỉ lệ phù hợp) và
-`WEIGHTS[<nhóm>]`. Layout engine tự đo chữ và xếp vào dải.
+`designlayout/templates.py` khai báo template **dạng dữ liệu**, sinh từ các
+dạng gốc × biến thể (căn lề, vị trí, cột, trang trí). Id ổn định, dạng
+`<loại>.<dạng>.<biến thể>`:
+
+| Loại | Số template | Ví dụ |
+|---|---|---|
+| poster | 75 | `poster.stack_top.left.divider`, `poster.bottom_bar.dark.center`, `poster.card.center.light` |
+| social | 57 (dùng chung nhiều template poster) | `social.quote.corners`, `social.story_bottom.dark_strip` |
+| banner | 40 | `banner.side.left.60.bar`, `banner.badge.middle.star`, `banner.panel_left.accent` |
+| thumbnail | 26 | `thumb.big_side.left.outline.star`, `thumb.center_huge.accent_strip` |
+| birthday | 22 | `birthday.age_badge.confetti_ribbon.star`, `birthday.card.accent.confetti` |
+| wedding | 21 | `wedding.monogram.double_frame`, `wedding.names_top.corners` |
+| invitation | 19 | `invite.center.corners`, `invite.card.bottom.dark` |
+| logo | 7 | `logo.center.ring`, `logo.stack.ring_divider` |
+
+Mọi template đi qua cùng layout engine nên đều được đảm bảo: không mất/cắt
+chữ, không chồng chữ, không tràn khung, đúng thứ bậc cỡ chữ, trang trí không
+đè lên chữ (kiểm tra tự động trên 1.350 layout).
+
+**Thêm template:** thêm một lời gọi `_t(...)` trong `templates.py`:
+
+```python
+_t("wedding.monogram.my_variant", "frame", ["wedding"], PORTRAITISH,
+   primary=(.06, .22, .88, .36), secondary=(.06, .66, .88, .22),  # tỉ lệ vùng an toàn
+   decor=D_DOUBLE + D_DIV_DIAMOND,          # khung đôi + đường kẻ hoạ tiết thoi
+   panel={"target": "all", "style": "light"})   # tuỳ chọn: thẻ nền sau chữ
+```
+
+Tham số khác: `align`, `p_valign`/`s_valign`, `s_align`, `badge=(x,y,w,h)` +
+`badge_shape` (`circle|star|diamond|pill`), `ribbon=True` (subheadline trên
+ruy băng), `outline` (viền chữ headline kiểu thumbnail, tỉ lệ cỡ chữ),
+`type_scale`, `weight` (trọng số chọn tự động). Kiểu cũ trong
+`compositions.py` (`BUILDERS`) vẫn giữ để ép bằng tên.
+
+## Shapes trong final_json (app tự vẽ)
+
+Toạ độ theo px canvas, màu hex. Vẽ theo thứ tự trong mảng (tấm nền trước,
+chữ vẽ sau cùng). `color_ref` (`text|accent`) chỉ để engine đồng bộ màu, app
+dùng `stroke`/`fill` đã tính sẵn.
+
+| type | Trường | Vẽ |
+|---|---|---|
+| `panel` | `x,y,w,h,fill,opacity,radius` | Hình chữ nhật bo góc, độ trong suốt `opacity` |
+| `ribbon` | `x,y,w,h,fill,notch` | Dải ruy băng, 2 đầu khía hình chữ V sâu `notch` |
+| `badge` | `shape` = `circle`/`star`/`diamond`: `cx,cy,r,fill`; `pill`: `x,y,w,h,fill` | Huy hiệu đặc; `star` = 14 cánh, bán kính trong 0.82r |
+| `border` | `x,y,w,h,stroke,width,style,radius,gap` | `single`; `rounded` (bo `radius`); `double` (khung thứ 2 lùi vào `gap`, nét mảnh bằng nửa) |
+| `corners` | `x,y,w,h,len,stroke,width` | 4 góc chữ L, mỗi cạnh dài `len` |
+| `divider` | `x0,x1,y,stroke,width,ornament,ornament_size` | Đường ngang; `ornament` `diamond`/`dot`/`dots` ở giữa (cắt đoạn thẳng quanh hoạ tiết) |
+| `accent_bar` | `x,y,w,h,fill` | Thanh ngắn bo tròn 2 đầu |
+| `dots` | `points:[[x,y,r],...]`, `fills:[hex,...]`, `opacity` | Confetti: hình tròn |
+| `ring` | `cx,cy,r,stroke,width` | Vòng tròn viền |
+| `line` | `x0,y0,x1,y1,stroke,width` | Đường thẳng (kiểu cũ) |
+
+Chữ có `on_shape: true` nằm trên huy hiệu/ruy băng/tấm nền màu nhấn (màu đã
+khớp với shape); `on_panel` = nằm trên tấm nền sáng/tối.
 
 ## Thêm / đổi font
 

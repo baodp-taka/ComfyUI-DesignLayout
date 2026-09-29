@@ -476,7 +476,18 @@ WEIGHTS: Dict[str, Dict[str, Dict[str, int]]] = {
 
 
 def list_names() -> List[str]:
-    return list(BUILDERS.keys())
+    """Legacy builder names + every template id (node dropdown)."""
+    from . import templates
+    return list(BUILDERS.keys()) + [t["id"] for t in templates.TEMPLATES]
+
+
+def aspects_of(name: str) -> set:
+    """Aspect classes a legacy builder or a template id is designed for."""
+    if name in COMPAT:
+        return COMPAT[name]
+    from . import templates
+    t = templates.BY_ID.get(name)
+    return t["aspects"] if t else set()
 
 
 def is_badge(name: str) -> bool:
@@ -497,30 +508,24 @@ def choose(cw: int, ch: int, seed: int, design_type: str,
            force: bool = False) -> Dict:
     """Pick + build a composition deterministically from `seed`.
 
-    `hint` (from the LLM) is honored only if it suits the canvas aspect, else
-    mapped via ALIASES or ignored. `force=True` (the node's composition widget)
-    builds exactly `hint` whatever the aspect.
+    Auto (the normal path): a template from the ~200-template library,
+    filtered by design_type + canvas aspect and weighted by the LLM's family
+    hint (see templates.pick). `hint` may also be an exact template id.
+    `force=True` (the node's composition widget) builds exactly `hint`:
+    a legacy builder name or a template id, whatever the aspect.
     """
+    from . import templates
     check_supported(cw, ch)
     rng = random.Random(seed)
     aspect = aspect_class(cw, ch)
-    name = None
-    if hint in BUILDERS:
-        name = hint if force else resolve(hint, aspect)
-    if name is None:
-        pool = WEIGHTS[aspect]
-        weights = dict(pool.get(design_type, pool["poster"]))
-        if has_emphasis:
-            badges = [n for n in weights if is_badge(n)] or [BADGE_FOR[aspect]]
-            for n in badges:
-                weights[n] = weights.get(n, 0) + 3
-        else:
-            # a badge template without an emphasis text wastes its badge slot
-            weights = {n: w for n, w in weights.items() if not is_badge(n)}
-        names = list(weights.keys())
-        wts = [weights[n] for n in names]
-        name = rng.choices(names, weights=wts, k=1)[0]
-    comp = BUILDERS[name](cw, ch, rng)
+    if force and hint in BUILDERS:
+        comp = BUILDERS[hint](cw, ch, rng)
+    elif hint in templates.BY_ID and (
+            force or aspect in templates.BY_ID[hint]["aspects"]):
+        comp = templates.build(templates.BY_ID[hint], cw, ch, aspect)
+    else:
+        t = templates.pick(design_type, aspect, rng, hint, has_emphasis)
+        comp = templates.build(t, cw, ch, aspect)
     comp["seed"] = seed
     comp["aspect"] = aspect
     comp["requested"] = hint

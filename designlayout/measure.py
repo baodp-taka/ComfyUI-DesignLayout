@@ -9,7 +9,8 @@ breaking measurement.
 """
 from __future__ import annotations
 from functools import lru_cache
-from typing import Dict, List, Tuple
+from itertools import combinations
+from typing import Dict, List, Optional, Tuple
 from PIL import ImageFont
 
 from .fonts import FontRegistry
@@ -65,10 +66,81 @@ def line_metrics(reg: FontRegistry, primary: str,
     return f.getmetrics()  # (ascent, descent)
 
 
+SEPARATORS = ("·", "•", "|", "-", "–", "—", "/")
+
+
+def _phrase_break(reg: FontRegistry, line: str, primary: str, language: str,
+                  size: int, ls_px: float, max_w: float) -> Tuple[str, str]:
+    """Split an overflowing line at the last phrase separator ("·", "|", a
+    trailing comma...) if that still leaves >= a quarter line, so "17:00 · Chủ
+    Nhật 12/10" breaks as "17:00 ·" / "Chủ Nhật 12/10" instead of mid-date.
+    The separator stays at the end of the first line (text is never lost)."""
+    toks = line.split(" ")
+    for j in range(len(toks) - 2, 0, -1):
+        t = toks[j]
+        if t in SEPARATORS or t.endswith(",") or t.endswith(";"):
+            head = " ".join(toks[:j + 1])
+            if line_width(reg, head, primary, language, size, ls_px) \
+                    >= 0.25 * max_w:
+                return head, " ".join(toks[j + 1:])
+    return line, ""
+
+
+def _is_sep(tok: str) -> bool:
+    return tok in SEPARATORS or tok.endswith(",") or tok.endswith(";")
+
+
+def _balance(reg: FontRegistry, words: List[str], k: int, primary: str,
+             language: str, size: int, ls_px: float,
+             max_w: float) -> Optional[List[str]]:
+    """Re-break `words` into the SAME number of lines k, evenly.
+
+    Like CSS `text-wrap: balance`: minimise the longest line and penalise
+    a lone word on a line. Text with phrase separators may only break right
+    after one. Returns None if nothing fits max_w.
+    """
+    n = len(words)
+    if n <= k or n > 30:
+        return None
+    width_cache = {}
+
+    def w(i, j):
+        if (i, j) not in width_cache:
+            width_cache[(i, j)] = line_width(reg, " ".join(words[i:j]),
+                                             primary, language, size, ls_px)
+        return width_cache[(i, j)]
+
+    has_sep = any(_is_sep(t) for t in words[:-1])
+    best, best_score = None, None
+    for cuts in combinations(range(1, n), k - 1):
+        if has_sep and not all(_is_sep(words[c - 1]) for c in cuts):
+            # phrase text ("17:00 · Chủ Nhật 12/10"): only break after a
+            # separator; if that cannot fit, return None so the caller
+            # shrinks the size instead of cutting through a date
+            continue
+        bounds = (0,) + cuts + (n,)
+        widths = [w(bounds[i], bounds[i + 1]) for i in range(k)]
+        if max(widths) > max_w:
+            continue
+        score = max(widths)
+        score += 0.10 * max_w * sum(1 for i in range(k)
+                                    if bounds[i + 1] - bounds[i] == 1)
+        if best_score is None or score < best_score:
+            best, best_score = bounds, score
+    if best is None:
+        return None
+    return [" ".join(words[best[i]:best[i + 1]]) for i in range(k)]
+
+
 def wrap_words(reg: FontRegistry, text: str, primary: str, language: str,
                size: int, ls_px: float, max_w: float,
                max_lines: int) -> List[str]:
-    """Greedy word wrap at whitespace; avoids a lone word on the last line."""
+    """Greedy word wrap at whitespace; avoids a lone word on the last line.
+
+    Always returns ALL words: the result may have more than `max_lines` lines,
+    which the caller treats as "does not fit" (and shrinks the size) instead
+    of silently dropping the tail of the text.
+    """
     words = text.split()
     if not words:
         return [text]
@@ -80,12 +152,17 @@ def wrap_words(reg: FontRegistry, text: str, primary: str, language: str,
                 or not cur:
             cur = trial
         else:
-            lines.append(cur)
-            cur = w
-        if len(lines) >= max_lines:
-            break
-    if cur and len(lines) < max_lines:
+            head, rest = _phrase_break(reg, cur, primary, language, size,
+                                       ls_px, max_w)
+            lines.append(head)
+            cur = (rest + " " + w) if rest else w
+    if cur:
         lines.append(cur)
+    if 2 <= len(lines) <= 4:
+        bal = _balance(reg, words, len(lines), primary, language, size, ls_px,
+                       max_w)
+        if bal:
+            return bal
     # avoid orphan: single short word alone on the last line
     if len(lines) >= 2 and len(lines[-1].split()) == 1:
         prev = lines[-2].split()
@@ -95,6 +172,22 @@ def wrap_words(reg: FontRegistry, text: str, primary: str, language: str,
             lines[-2] = " ".join(prev)
             lines[-1] = moved + " " + merged
     return lines
+
+
+def ink_pads(reg: FontRegistry, lines: List[str], primary: str, size: int,
+             lh: float) -> Tuple[int, int]:
+    """(pad_top, pad_bottom): ink that sticks out of the line boxes.
+
+    Stacked Vietnamese diacritics (Ẩ, Ễ, Ỗ...) rise above the font ascender,
+    so the first line's ink can extend above the block box and collide with
+    the block above. Measure the real glyph bbox and pad the block for it.
+    """
+    if not lines:
+        return 0, 0
+    f = get_font(reg, primary, size)
+    top = f.getbbox(lines[0], anchor="la")[1]       # < 0 = above ascender
+    bottom = f.getbbox(lines[-1], anchor="la")[3]   # relative to line top
+    return max(0, int(round(-top))), max(0, int(round(bottom - lh)))
 
 
 def fit_block(reg: FontRegistry, text: str, primary: str, language: str,
@@ -108,6 +201,23 @@ def fit_block(reg: FontRegistry, text: str, primary: str, language: str,
     dict(lines, size_px, w, h, line_height, ls_px, runs_primary=primary).
     """
     size = int(target_size)
+    # a short multi-word line that ALMOST fits reads better slightly smaller
+    # on one line than broken in two ("Minh & Lan" vs "Minh / & Lan")
+    if allow_multiline and len(text.split()) > 1:
+        s1 = size
+        while s1 >= max(min_size, int(size * 0.85)):
+            ls1 = ls_frac * s1
+            w1 = line_width(reg, text, primary, language, s1, ls1)
+            if w1 <= max_w:
+                asc, desc = line_metrics(reg, primary, s1)
+                lh = (asc + desc) * line_height
+                pt, pb = ink_pads(reg, [text], primary, s1, lh)
+                if pt + lh + pb <= max_h:
+                    return {"lines": [text], "size_px": s1, "w": w1,
+                            "h": pt + lh + pb, "line_height": line_height,
+                            "ls_px": ls1, "ascent": asc, "descent": desc,
+                            "pad_top": pt, "pad_bottom": pb}
+            s1 -= max(1, int(s1 * 0.02))
     while size >= min_size:
         ls_px = ls_frac * size
         if allow_multiline:
@@ -119,13 +229,15 @@ def fit_block(reg: FontRegistry, text: str, primary: str, language: str,
                   for ln in lines]
         asc, desc = line_metrics(reg, primary, size)
         lh = (asc + desc) * line_height
-        block_h = lh * len(lines)
+        pad_top, pad_bottom = ink_pads(reg, lines, primary, size, lh)
+        block_h = pad_top + lh * len(lines) + pad_bottom
         block_w = max(widths) if widths else 0
-        if block_w <= max_w and block_h <= max_h:
+        if block_w <= max_w and block_h <= max_h and len(lines) <= max_lines:
             return {
                 "lines": lines, "size_px": size, "w": block_w, "h": block_h,
                 "line_height": line_height, "ls_px": ls_px,
                 "ascent": asc, "descent": desc,
+                "pad_top": pad_top, "pad_bottom": pad_bottom,
             }
         size = int(size * 0.94) - 1
     # fell through: return smallest attempt (clamped) so we never crash
@@ -136,7 +248,10 @@ def fit_block(reg: FontRegistry, text: str, primary: str, language: str,
     widths = [line_width(reg, ln, primary, language, size, ls_px)
               for ln in lines]
     asc, desc = line_metrics(reg, primary, size)
+    lh = (asc + desc) * line_height
+    pad_top, pad_bottom = ink_pads(reg, lines, primary, size, lh)
     return {"lines": lines, "size_px": size, "w": max(widths) if widths else 0,
-            "h": (asc + desc) * line_height * len(lines),
+            "h": pad_top + lh * len(lines) + pad_bottom,
             "line_height": line_height, "ls_px": ls_px,
-            "ascent": asc, "descent": desc, "overflow": True}
+            "ascent": asc, "descent": desc,
+            "pad_top": pad_top, "pad_bottom": pad_bottom, "overflow": True}

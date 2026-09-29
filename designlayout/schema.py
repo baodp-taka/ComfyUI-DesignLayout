@@ -63,7 +63,9 @@ MOOD_GROUP_PREF = {
                 "subheadline": ["script", "sans"]},
     "festive": {"headline": ["decorative", "script", "display"]},
     "minimal": {"headline": ["sans", "display"]},
-    "bold": {"headline": ["display", "sans"]},
+    # heavy faces first: for scripts without a display font (Vietnamese) a
+    # bold slab serif reads far stronger than a thin sans
+    "bold": {"headline": ["display", "serif", "decorative", "sans"]},
 }
 
 DEFAULTS = {
@@ -126,6 +128,9 @@ def to_app_json(layout: Dict[str, Any]) -> Dict[str, Any]:
         "canvas": layout.get("canvas", DEFAULT_CANVAS),
         "composition": layout.get("composition"),
         "seed": layout.get("seed"),
+        # LLM color intent {"text": "#..|null", "accent": "#..|null"}; each
+        # text's final "color" is this hue fitted for contrast on the image
+        "palette": layout.get("palette", {"text": None, "accent": None}),
         "texts": [block_to_compat(b) for b in layout.get("blocks", [])],
         "shapes": layout.get("shapes", []),
     }
