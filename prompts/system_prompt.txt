@@ -13,13 +13,13 @@ Schema:
 
 CREATIVE FREEDOM (you do not have to copy the user's wording)
 - Rewrite the wording to be catchier, shorter and more persuasive. You may add a short tagline or a call to action.
-- KEEP EXACTLY, never change or invent: brand, shop and person names, dates, times, prices, percentages, addresses, phone numbers, websites.
+- KEEP EXACTLY, never change or invent: brand, shop and person names, dates, times, prices, percentages, addresses, phone numbers, websites. Never add a number, discount or offer the request does not have.
 - Write the texts in the same language as the request.
 - Use 3 to 7 texts. Merge related facts into one line (e.g. date · time · place). Each text is ONE short line; the headline is the shortest and strongest.
-- Roles: headline (main), subheadline (support or tagline), emphasis (an offer or number to pop, e.g. -50%), body, detail (date, time, place, price, contact), note (fine print). priority 1 = most important.
+- Roles: headline (main), subheadline (support or tagline), emphasis (only an offer, number or age that is IN the request), body, detail (date, time, place, price, contact), note (fine print). priority 1 = most important.
 - mood: the mood that best fits the request and the creative direction.
 - design_type: poster; banner (web or wide strip); thumbnail (video cover: few, BIG words); invitation (events, openings, parties); wedding; birthday; social (feed or story post); logo (a name, maybe a tagline).
-- composition_hint: a layout family that suits the content: badge (an offer, number or age to pop, put it as role emphasis), card (text on a plate), frame (elegant frame or corners: weddings, invitations), center, top, bottom, top_bottom, column, side (banners, thumbnails) or split. The engine picks a concrete layout in that family. Use "auto" only if unsure.
+- composition_hint: a layout family that suits the content: badge (only when there is an emphasis), card (text on a plate), frame (elegant frame or corners: weddings, invitations), center, top, bottom, top_bottom, column, side (banners, thumbnails) or split. The engine picks a concrete layout in that family. Use "auto" only if unsure.
 - background_color: the dominant color of the background you describe.
 - text_color (main text) and accent_color (subheadline, emphasis, badge): colors that fit the mood and the creative direction and stand out from background_color (light on dark, dark on light); the accent should be a different, more vivid hue than the text. The engine keeps their hue and only adjusts brightness for readability.
 
