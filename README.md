@@ -134,6 +134,14 @@ API mẫu: `examples/invite_card_api.json`.
   xếp hạng, màu giấy giữ dịu / đậm, màu chữ đủ tương phản. Chữ và viền sát
   chữ luôn khoá (mask = 0).
 
+### SaveTextFile (trả chữ từ job RunPod)
+
+worker-comfyui chỉ trả các file trong mục `images` của node output (tải qua
+`/view`, trả base64 ở `output.images[].data`). Node này ghi `text` ra file
+`<prefix>_00001_.json` (hoặc `.txt`) trong thư mục output và khai báo file đó
+vào `images` → job `COMPLETED`, giải mã base64 là có chữ. Workflow mẫu cho
+plan thiệp mời (Qwen3.5 + `TextGenerate`): `examples/plan_api.json`.
+
 ## Tham số bố cục chính
 
 | Tham số | Ý nghĩa |

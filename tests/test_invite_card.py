@@ -47,6 +47,8 @@ def test_paper_is_kept_printable():
     assert ic.paper_of({"paper": "#00FFFF"}) == (211, 238, 238)     # neon -> pastel
     assert ic.paper_of({"paper": "001A3C"}) == (11, 27, 49)          # no '#' is fine
     assert ic.paper_of({}) == ic.DEFAULT_PAPER
+    assert ic.paper_of({"paper": "dark red"})[0] > ic.paper_of({"paper": "dark red"})[2]   # a deep red
+    assert ic.color_of("gold") == (255, 215, 0) and ic.color_of("no such colour") is None
 
 
 def test_parse_plan_accepts_llm_chatter():

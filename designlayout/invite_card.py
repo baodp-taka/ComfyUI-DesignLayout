@@ -218,13 +218,26 @@ def pick_layout(plan: Dict, rng: random.Random, force: str = "") -> Tuple[str, s
     return comp, rng.choice(shapes[:TOP_SHAPES])
 
 
+def color_of(value) -> Optional[Tuple[int, int, int]]:
+    """'#RRGGBB', 'RRGGBB' or a CSS colour name ('dark red', 'gold') -> RGB."""
+    from PIL import ImageColor
+    c = str(value or "").strip()
+    if re.fullmatch(r"#?[0-9A-Fa-f]{6}", c):
+        c = c.lstrip("#")
+        return tuple(int(c[i:i + 2], 16) for i in (0, 2, 4))
+    try:
+        return ImageColor.getrgb(re.sub(r"[\s_-]+", "", c.lower()))[:3]
+    except ValueError:
+        return None
+
+
 def paper_of(plan: Dict) -> Tuple[int, int, int]:
     """The LLM's paper colour kept printable: a light paper becomes a soft
     pastel (no neon), a deep one a rich dark tone."""
-    c = str(plan.get("paper") or "").strip().lstrip("#")
-    if not re.fullmatch(r"[0-9A-Fa-f]{6}", c):
+    rgb = color_of(plan.get("paper"))
+    if rgb is None:
         return DEFAULT_PAPER
-    r, g, b = (int(c[i:i + 2], 16) / 255 for i in (0, 2, 4))
+    r, g, b = (v / 255 for v in rgb)
     h, l, s = colorsys.rgb_to_hls(r, g, b)
     if l >= 0.45:
         l, s = max(l, 0.88), min(s, 0.45)
@@ -240,9 +253,8 @@ def text_colors(plan: Dict, paper) -> Dict[str, str]:
     defaults = {"ink": "#F3EDE2" if deep else "#2B2420", "accent": "#C9A227"}
     out = {}
     for k, need in (("ink", 6.0), ("accent", 3.0 if deep else 2.2)):
-        c = plan.get(k)
-        c = c if isinstance(c, str) and re.fullmatch(r"#[0-9A-Fa-f]{6}", c.strip()) else defaults[k]
-        out[k] = rgb_to_hex(fit_contrast(hex_to_rgb(c.strip()), paper, need))
+        rgb = color_of(plan.get(k)) or hex_to_rgb(defaults[k])
+        out[k] = rgb_to_hex(fit_contrast(rgb, paper, need))
     return out
 
 
