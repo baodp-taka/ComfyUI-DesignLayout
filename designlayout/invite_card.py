@@ -59,6 +59,8 @@ SCENE_SUFFIX = ("The paper card stands in the middle of the picture. Keep the te
                 "exactly as it is; finish the invitation card around it. Do not add any other text, "
                 "letters, numbers or symbols anywhere, and no other card.")
 DEFAULT_PAPER = (250, 248, 243)
+SCENE_FALLBACK = ("A softly lit, elegant setting for the occasion, with tasteful themed "
+                  "decorations around the paper card in colours that match it")
 
 # sentences of an OLD worked example in the prompt: never let them through
 EXAMPLE_LINES = ["Together with their families", "Invite you to celebrate their wedding",
@@ -131,11 +133,29 @@ def _norm(t) -> str:
     return " ".join(re.sub(r"[^\w\s]", " ", str(t).lower()).split())
 
 
+PLACEHOLDER = re.compile(r"^\s*<.*>\s*$", re.S)
+VI_CHARS = re.compile(r"[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệịỉĩọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]", re.I)
+
+
+def _is_placeholder(v) -> bool:
+    return bool(PLACEHOLDER.match(str(v or "")))
+
+
 def drop_copied(comps: List[Dict], request: str) -> Tuple[List[Dict], List[str]]:
-    """Drop lines copied from the prompt's example or left as a <placeholder>."""
+    """Drop lines copied from the prompt's example or left as a <placeholder>.
+    The names are never dropped for a placeholder in one field (the LLM wrote
+    "connector": "<and>"): only that field is cleared; prepare() puts the
+    connector back."""
     req = _norm(request)
     out, dropped = [], []
     for c in comps:
+        if c.get("type") == "names":
+            c = {k: ("" if k != "first" and _is_placeholder(v) else v) for k, v in c.items()}
+            if not str(c.get("first") or "").strip() or _is_placeholder(c.get("first")):
+                dropped.append(str(c)[:60])
+                continue
+            out.append(c)
+            continue
         vals = [str(v) for v in c.values() if isinstance(v, str)]
         if any("<" in v and ">" in v for v in vals):
             dropped.append(str(c)[:60])
@@ -222,8 +242,9 @@ def color_of(value) -> Optional[Tuple[int, int, int]]:
     """'#RRGGBB', 'RRGGBB' or a CSS colour name ('dark red', 'gold') -> RGB."""
     from PIL import ImageColor
     c = str(value or "").strip()
-    if re.fullmatch(r"#?[0-9A-Fa-f]{6}", c):
-        c = c.lstrip("#")
+    m = re.fullmatch(r"(?:#|0x)?([0-9A-Fa-f]{6})", c)
+    if m:
+        c = m.group(1)
         return tuple(int(c[i:i + 2], 16) for i in (0, 2, 4))
     try:
         return ImageColor.getrgb(re.sub(r"[\s_-]+", "", c.lower()))[:3]
@@ -365,15 +386,26 @@ def prepare(reg: FontRegistry, plan, request: str, seed: int = 0, w: int = 896, 
     comps, breaks = apply_breaks(clean)
     if not any(c.get("type") == "names" for c in comps):
         raise ValueError("the plan has no names")
+    vi = str(plan.get("language", "")).lower().startswith("viet") or bool(VI_CHARS.search(request))
+    for c in comps:                       # two names need a connector
+        if c.get("type") == "names" and str(c.get("second") or "").strip() \
+                and not str(c.get("connector") or "").strip():
+            c["connector"] = "và" if vi else "and"
+    # Qwen-Image-Edit does not understand a Vietnamese scene prompt (it keeps
+    # the input backdrop): fall back to a generic English scene
+    scene = plan.get("background_prompt")
+    scene_fallback = bool(VI_CHARS.search(str(scene or "")))
+    if scene_fallback:
+        scene = SCENE_FALLBACK
     text_img, box, info = render_text(reg, comps, plan.get("language", "latin"), seed, rng,
                                       comp, paper, colors, w, h)
     acc = hex_to_rgb(colors["accent"])
     backdrop = tuple(int(0.55 * c + 0.45 * 150) for c in acc)
     inp, mask, alpha = build_inputs(text_img, paper, shape, backdrop, seed)
     report = {"composition": comp, "card": shape, "paper": rgb_to_hex(paper), **colors, **info,
-              "line_breaks": breaks, "dropped": dropped}
+              "line_breaks": breaks, "dropped": dropped, "scene_fallback": scene_fallback}
     return {"image": inp, "mask": mask, "alpha": alpha,
-            "prompt": scene_prompt(plan.get("background_prompt")), "report": report}
+            "prompt": scene_prompt(scene), "report": report}
 
 
 def composite(generated: Image.Image, image: Image.Image, alpha: Image.Image) -> Image.Image:

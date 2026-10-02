@@ -71,6 +71,26 @@ def test_prepare_locks_the_text_and_fixes_the_plan():
     assert "blank" not in out["prompt"] and out["prompt"].endswith("no other card.")
 
 
+def test_placeholder_in_one_name_field_keeps_the_names():
+    # a real plan from the endpoint: "<and>" left in the connector, a 0x colour,
+    # a Vietnamese scene prompt
+    plan = json.loads(json.dumps(PLAN))
+    plan["paper"] = "0x000080"
+    plan["background_prompt"] = "Một khung cảnh nhà hàng cổ điển sang trọng, tông đỏ đô."
+    for c in plan["components"]:
+        if c["type"] == "names":
+            c["connector"] = "<and>"
+    assert ic.color_of("0x000080") == (0, 0, 128)
+    out = ic.prepare(FontRegistry(FONTS), plan, REQUEST, seed=2, w=448, h=672)
+    assert out["report"]["scene_fallback"] is True
+    assert "Một" not in out["prompt"] and out["prompt"].startswith("A softly lit")
+    kept, dropped = ic.drop_copied(plan["components"], REQUEST)
+    names = [c for c in kept if c["type"] == "names"][0]
+    assert names["first"] == "Hoàng Nam" and names["connector"] == ""
+    bad = [{"type": "names", "first": "<the MAIN name>", "second": ""}]
+    assert ic.drop_copied(bad, REQUEST)[0] == []
+
+
 def test_composite_puts_the_glyphs_back():
     from PIL import Image
     out = ic.prepare(FontRegistry(FONTS), PLAN, REQUEST, seed=1, w=448, h=672)
