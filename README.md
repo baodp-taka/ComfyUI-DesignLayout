@@ -111,6 +111,29 @@ Chọn bố cục **sau khi đã có ảnh nền**, giống cách designer làm:
 - Kích thước latent: tính từ tỉ lệ canvas (~1MP, bội 16) như
   `guide.auto_bg_size`; không cần `DesignLayoutEngine` / `DesignZoneCheck`.
 
+### InviteCardPrepare + InviteCardComposite (thiệp mời, chữ trước)
+
+Plan JSON do LLM viết (endpoint Qwen3.5 riêng) → code dựng tờ thiệp ở giữa
+có sẵn chữ → Qwen-Image-Edit 2511 inpaint cảnh xung quanh bằng mask mềm →
+dán lại nét chữ nguyên pixel. Logic: `designlayout/invite_card.py`; workflow
+API mẫu: `examples/invite_card_api.json`.
+
+- **InviteCardPrepare — In:** `plan_json` (câu trả lời của LLM, chấp nhận có
+  chữ / code fence bao quanh), `request` (câu yêu cầu gốc: ngày tiếng Việt
+  lấy từ đây, kiểm tra câu chép từ ví dụ), `seed`, `width` / `height`
+  (mặc định 896×1344), `fonts_dir`, `composition` (`auto` = seed chọn trong
+  top 3 LLM xếp hạng). **Ra:** `image` (thiệp + chữ trên nền loang),
+  `mask` (0 giữ · 1 vẽ lại → `SetLatentNoiseMask`, model qua
+  `DifferentialDiffusion`), `glyph_mask`, `prompt` (cho
+  `TextEncodeQwenImageEditPlus`), `report`.
+- **InviteCardComposite — In:** `generated` (sau `VAEDecode`), `card_image`,
+  `glyph_mask`. **Ra:** ảnh cuối.
+- Code tự lo: sửa ngày tiếng Việt (tự tính thứ), bỏ dòng chép ví dụ /
+  `<…>`, ngắt dòng tự nhiên, bố cục (classic, modern_line, hero_date,
+  save_the_date, editorial) và khung (arch, rounded, ticket) trong top LLM
+  xếp hạng, màu giấy giữ dịu / đậm, màu chữ đủ tương phản. Chữ và viền sát
+  chữ luôn khoá (mask = 0).
+
 ## Tham số bố cục chính
 
 | Tham số | Ý nghĩa |
