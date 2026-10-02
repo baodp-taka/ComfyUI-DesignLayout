@@ -86,13 +86,31 @@ def _phrase_break(reg: FontRegistry, line: str, primary: str, language: str,
     return line, ""
 
 
+def hint_cuts(text: str):
+    """Word indices after which the writer marked a line break ("\n"), or
+    None. "Tiệc Sinh Nhật\nBé Bảo Ngọc" -> {3}: never "Nhật Bé"."""
+    if "\n" not in text:
+        return None
+    cuts, n = set(), 0
+    parts = [p.split() for p in text.split("\n")]
+    for p in parts[:-1]:
+        n += len(p)
+        if p:
+            cuts.add(n)
+    return cuts or None
+
+
+def flat_text(text: str) -> str:
+    return " ".join(text.split())
+
+
 def _is_sep(tok: str) -> bool:
     return tok in SEPARATORS or tok.endswith(",") or tok.endswith(";")
 
 
 def _balance(reg: FontRegistry, words: List[str], k: int, primary: str,
              language: str, size: int, ls_px: float,
-             max_w: float) -> Optional[List[str]]:
+             max_w: float, allowed=None) -> Optional[List[str]]:
     """Re-break `words` into the SAME number of lines k, evenly.
 
     Like CSS `text-wrap: balance`: minimise the longest line and penalise
@@ -113,7 +131,10 @@ def _balance(reg: FontRegistry, words: List[str], k: int, primary: str,
     has_sep = any(_is_sep(t) for t in words[:-1])
     best, best_score = None, None
     for cuts in combinations(range(1, n), k - 1):
-        if has_sep and not all(_is_sep(words[c - 1]) for c in cuts):
+        if allowed is not None:
+            if not all(c in allowed for c in cuts):
+                continue          # break only where the writer marked "\n"
+        elif has_sep and not all(_is_sep(words[c - 1]) for c in cuts):
             # phrase text ("17:00 · Chủ Nhật 12/10"): only break after a
             # separator; if that cannot fit, return None so the caller
             # shrinks the size instead of cutting through a date
@@ -141,9 +162,27 @@ def wrap_words(reg: FontRegistry, text: str, primary: str, language: str,
     which the caller treats as "does not fit" (and shrinks the size) instead
     of silently dropping the tail of the text.
     """
+    allowed = hint_cuts(text)
     words = text.split()
     if not words:
         return [text]
+    if allowed is not None:
+        # explicit breaks: the fewest lines that fit, cutting only at hints
+        for k in range(1, min(max_lines, len(allowed) + 1) + 1):
+            if k == 1:
+                flat = " ".join(words)
+                if line_width(reg, flat, primary, language, size, ls_px) <= max_w:
+                    return [flat]
+                continue
+            bal = _balance(reg, words, k, primary, language, size, ls_px,
+                           max_w, allowed)
+            if bal:
+                return bal
+        # the marked lines do not fit at this size: return them anyway so the
+        # caller SHRINKS the size instead of breaking inside a phrase / name
+        segs = [" ".join(p.split()) for p in text.split(chr(10)) if p.split()]
+        if len(segs) <= max_lines:
+            return segs
     lines: List[str] = []
     cur = ""
     for w in words:
@@ -190,6 +229,10 @@ def ink_pads(reg: FontRegistry, lines: List[str], primary: str, size: int,
     return max(0, int(round(-top))), max(0, int(round(bottom - lh)))
 
 
+EXTRA_LINE_COST = 0.82          # score = size x this ^ (lines - 1)
+FEWER_LINES_MAX_SHRINK = 0.78   # look for fewer lines down to this x first fit
+
+
 def fit_block(reg: FontRegistry, text: str, primary: str, language: str,
               max_w: float, max_h: float, target_size: int, ls_frac: float,
               allow_multiline: bool = True, max_lines: int = 3,
@@ -201,6 +244,8 @@ def fit_block(reg: FontRegistry, text: str, primary: str, language: str,
     dict(lines, size_px, w, h, line_height, ls_px, runs_primary=primary).
     """
     size = int(target_size)
+    hinted = text
+    text = flat_text(text)
     # a short multi-word line that ALMOST fits reads better slightly smaller
     # on one line than broken in two ("Minh & Lan" vs "Minh / & Lan")
     if allow_multiline and len(text.split()) > 1:
@@ -218,10 +263,11 @@ def fit_block(reg: FontRegistry, text: str, primary: str, language: str,
                             "ls_px": ls1, "ascent": asc, "descent": desc,
                             "pad_top": pt, "pad_bottom": pb}
             s1 -= max(1, int(s1 * 0.02))
+    first, best, best_score = None, None, None
     while size >= min_size:
         ls_px = ls_frac * size
         if allow_multiline:
-            lines = wrap_words(reg, text, primary, language, size, ls_px,
+            lines = wrap_words(reg, hinted, primary, language, size, ls_px,
                                max_w, max_lines)
         else:
             lines = [text]
@@ -233,13 +279,25 @@ def fit_block(reg: FontRegistry, text: str, primary: str, language: str,
         block_h = pad_top + lh * len(lines) + pad_bottom
         block_w = max(widths) if widths else 0
         if block_w <= max_w and block_h <= max_h and len(lines) <= max_lines:
-            return {
+            fit = {
                 "lines": lines, "size_px": size, "w": block_w, "h": block_h,
                 "line_height": line_height, "ls_px": ls_px,
                 "ascent": asc, "descent": desc,
                 "pad_top": pad_top, "pad_bottom": pad_bottom,
             }
+            # each extra line costs like ~18% of size: 2 lines at 0.85x beat 3
+            score = size * (EXTRA_LINE_COST ** (len(lines) - 1))
+            if best_score is None or score > best_score:
+                best, best_score = fit, score
+            if first is None:
+                first = size
+            if len(lines) == 1 or size < first * FEWER_LINES_MAX_SHRINK:
+                return best
+        elif first is not None and size < first * FEWER_LINES_MAX_SHRINK:
+            return best
         size = int(size * 0.94) - 1
+    if best is not None:
+        return best
     # fell through: return smallest attempt (clamped) so we never crash
     size = min_size
     ls_px = ls_frac * size

@@ -394,6 +394,16 @@ def build(t: Dict, cw: int, ch: int, aspect: str) -> Dict:
     ins = round(t["inset"] * short)
     c = {"x": mx + ins, "y": my + ins,
          "w": cw - 2 * (mx + ins), "h": ch - 2 * (my + ins)}
+    if t.get("content_rect"):
+        # image-first: the whole template squeezed into an empty area of the
+        # picture (canvas fractions x, y, w, h), keeping the safe margins
+        fx, fy, fw, fh = t["content_rect"]
+        pad = round(0.02 * short)
+        x0 = max(c["x"], int(fx * cw) + pad)
+        y0 = max(c["y"], int(fy * ch) + pad)
+        x1 = min(c["x"] + c["w"], int((fx + fw) * cw) - pad)
+        y1 = min(c["y"] + c["h"], int((fy + fh) * ch) - pad)
+        c = {"x": x0, "y": y0, "w": max(1, x1 - x0), "h": max(1, y1 - y0)}
 
     def px(f):
         x, y, w, h = f

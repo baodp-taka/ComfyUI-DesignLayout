@@ -39,6 +39,57 @@ LINE_PAD_EM = 0.45        # calm area around a line, x font size
 
 
 # ---- image statistics --------------------------------------------------------
+OBJECT_FREE = 0.20        # share of a line that may cover objects for free
+OBJECT_WEIGHT = 1.6       # text over an object costs more than over a busy wall
+BACKDROP_CHAIN_DE = 14.0  # shades closer than this to the backdrop join it
+OBJECT_DE = 22.0          # Lab distance from the backdrop that is "an object"
+
+
+def _lab(rgb: np.ndarray) -> np.ndarray:
+    c = rgb.astype(np.float32) / 255
+    c = np.where(c > 0.04045, ((c + 0.055) / 1.055) ** 2.4, c / 12.92)
+    m = np.array([[0.4124, 0.3576, 0.1805], [0.2126, 0.7152, 0.0722],
+                  [0.0193, 0.1192, 0.9505]], np.float32)
+    xyz = c @ m.T / np.array([0.95047, 1.0, 1.08883], np.float32)
+    f = np.where(xyz > 0.008856, np.cbrt(xyz), 7.787 * xyz + 16 / 116)
+    return np.stack([116 * f[:, 1] - 16, 500 * (f[:, 0] - f[:, 1]),
+                     200 * (f[:, 1] - f[:, 2])], 1)
+
+
+def object_map(rgb: Image.Image, cw: int, ch: int, k: int = 16) -> np.ndarray:
+    """0..1 per pixel: how much it is an OBJECT rather than the backdrop.
+
+    Edges alone miss big smooth objects (a balloon is flat inside). The
+    backdrop is the most common color plus every shade chained to it (so a
+    sky gradient stays backdrop); anything clearly off those colors -- a
+    balloon, a crown, a stage -- is an object even where it is smooth."""
+    small = rgb.convert("RGB").resize((160, max(1, int(160 * ch / cw))))
+    q = small.quantize(k, method=Image.Quantize.MEDIANCUT)
+    idx = np.asarray(q).reshape(-1)
+    px = np.asarray(small, np.float32).reshape(-1, 3)
+    kk = int(idx.max()) + 1
+    share = np.bincount(idx, minlength=kk) / len(idx)
+    cent = np.stack([px[idx == i].mean(0) if (idx == i).any() else np.zeros(3)
+                     for i in range(kk)])
+    lab = _lab(cent)
+    back = {int(share.argmax())}
+    grown = True
+    while grown:
+        grown = False
+        for i in range(kk):
+            if i in back or share[i] < 0.01:
+                continue
+            if min(np.linalg.norm(lab[i] - lab[j]) for j in back) < BACKDROP_CHAIN_DE:
+                back.add(i)
+                grown = True
+    d = np.min(np.linalg.norm(_lab(px)[:, None, :] - lab[sorted(back)][None], axis=2),
+               axis=1)
+    obj = np.clip((d - OBJECT_DE * 0.5) / OBJECT_DE, 0, 1)
+    im = Image.fromarray((obj.reshape(small.size[1], small.size[0]) * 255)
+                         .astype(np.uint8)).resize((cw, ch), Image.BILINEAR)
+    return np.asarray(im, np.float32) / 255
+
+
 class ImageStats:
     """Busy map + luminance integrals of the background at canvas size."""
 
@@ -65,6 +116,8 @@ class ImageStats:
                               dtype=np.float32) / 255.0
         self.busy = busy
         self._ib = self._integral(busy)
+        self.objects = object_map(rgb, cw, ch)
+        self._io = self._integral(self.objects)
         lum = gray / 255.0
         self._il = self._integral(lum)
         self._il2 = self._integral(lum * lum)
@@ -88,7 +141,8 @@ class ImageStats:
         return float(s) / ((x1 - x0) * (y1 - y0))
 
     def box_cost(self, box) -> Tuple[float, float, float]:
-        """(cost, busy, luminance std) of a box; cost = busy + 0.8 x std.
+        """(cost, busy, luminance std) of a box;
+        cost = busy + 0.8 x std + OBJECT_WEIGHT x object share.
 
         std catches a line crossing a light/dark boundary (one text color
         cannot work on both halves) even when there are few edges.
@@ -100,7 +154,11 @@ class ImageStats:
         m = self._mean(self._il, b)
         var = max(0.0, self._mean(self._il2, b) - m * m)
         std = math.sqrt(var)
-        return busy + 0.8 * std, busy, std
+        obj = self._mean(self._io, b)
+        # a moderate overlap is fine (text may sit on part of the scene); the
+        # cost only grows once a line covers more than OBJECT_FREE of objects
+        over = max(0.0, obj - OBJECT_FREE) / (1 - OBJECT_FREE)
+        return busy + 0.8 * std + OBJECT_WEIGHT * over, busy, std
 
 
 # ---- scoring -----------------------------------------------------------------
@@ -161,6 +219,161 @@ def candidate_pool(spec: Dict, aspect: str) -> List[Dict]:
     return pool
 
 
+# ---- empty areas ---------------------------------------------------------------
+FREE_MIN_W, FREE_MIN_H = 0.42, 0.22   # smallest area worth fitting text into
+FREE_CLEAN = 0.90                     # mean emptiness required inside it
+FREE_SAFE = 0.03                      # objects grown by this (x short side)
+FREE_RECTS = 3
+HEADLINE_SIZE_WEIGHT = 0.35          # cost of a headline at 0 vs the biggest size
+
+
+def empty_rects(stats: "ImageStats", n: int = FREE_RECTS) -> List[Tuple[float, float, float, float]]:
+    """Largest clearly empty rectangles (canvas fractions x, y, w, h).
+
+    Empty = no object (backdrop color) and little detail. Searched on a coarse
+    grid with integral images; returns up to `n` that do not overlap much."""
+    g = 24
+    cw, ch = stats.cw, stats.ch
+    occ = np.clip(stats.objects + 1.5 * stats.busy, 0, 1)
+    # keep a safety gap around every object, so text never grazes its edge
+    r = max(1, int(FREE_SAFE * min(cw, ch)))
+    occ_im = Image.fromarray((occ * 255).astype(np.uint8)).filter(
+        ImageFilter.MaxFilter(2 * (r // 2) + 1))
+    small = np.asarray(occ_im.resize((g, g), Image.BOX), np.float32) / 255
+    small = np.maximum(small, (small > 0.35) * 1.0)   # any real object = full
+    free = 1 - small
+    I = np.pad(free.cumsum(0).cumsum(1), ((1, 0), (1, 0)))
+    cands = []
+    mw, mh = int(round(FREE_MIN_W * g)), int(round(FREE_MIN_H * g))
+    for y0 in range(0, g - mh + 1):
+        for y1 in range(y0 + mh, g + 1):
+            for x0 in range(0, g - mw + 1):
+                for x1 in range(x0 + mw, g + 1):
+                    a = (x1 - x0) * (y1 - y0)
+                    m = (I[y1, x1] - I[y0, x1] - I[y1, x0] + I[y0, x0]) / a
+                    if m >= FREE_CLEAN:
+                        cands.append((a * m, x0, y0, x1, y1))
+    cands.sort(reverse=True)
+    out: List[Tuple[int, int, int, int]] = []
+    for _, x0, y0, x1, y1 in cands:
+        area = (x1 - x0) * (y1 - y0)
+        if all(max(0, min(x1, b[2]) - max(x0, b[0])) *
+               max(0, min(y1, b[3]) - max(y0, b[1])) < 0.5 * area for b in out):
+            out.append((x0, y0, x1, y1))
+        if len(out) >= n:
+            break
+    return [(x0 / g, y0 / g, (x1 - x0) / g, (y1 - y0) / g) for x0, y0, x1, y1 in out]
+
+
+def _fitted_variants(pool: List[Dict], rects) -> List[Dict]:
+    """Every plain template once more per empty area (frames / badges stay
+    canvas-wide, so only templates without them are squeezed)."""
+    out = []
+    for t in pool:
+        if templates.is_badge(t) or any(d["type"] in ("border", "corners")
+                                        for d in t["decor"]):
+            continue
+        for i, r in enumerate(rects):
+            v = dict(t, id=f"{t['id']}@free{i}", content_rect=r)
+            out.append(v)
+    return out
+
+
+# Flexible layouts: built FROM the empty area instead of a fixed template --
+# (name, primary box, primary valign, secondary box, secondary valign) in
+# fractions of the empty area. spread = headline at the top of the area and
+# the details at its bottom; center = the block in the middle; tall =
+# a big headline taking most of the area.
+FLEX_KINDS = [
+    ("spread", (0, 0, 1, .58), "top", (0, .60, 1, .40), "bottom"),
+    ("center", (0, .08, 1, .52), "bottom", (0, .62, 1, .32), "top"),
+    ("tall", (0, 0, 1, .68), "middle", (0, .71, 1, .29), "top"),
+]
+FLEX_TYPE_SCALE = 1.3     # start bigger; the fit shrinks to the area
+FILL_WEIGHT = 0.30        # cost of a text block that fills none of the area
+
+
+def _flex_templates(spec: Dict, rects) -> List[Dict]:
+    out = []
+    dtype = spec.get("design_type", "poster")
+    for i, r in enumerate(rects):
+        r = _widen(r)
+        x, _, w, _ = r
+        # an area hugging one side reads best aligned to that side
+        align = "left" if x < 0.06 and w < 0.7 else \
+                "right" if x + w > 0.94 and w < 0.7 else "center"
+        for kind, pbox, pv, sbox, sv in FLEX_KINDS:
+            out.append({
+                "id": f"flex.{kind}.{align}@free{i}", "family": "flex",
+                "design_types": {dtype}, "aspects": set(templates.GENERAL),
+                "primary": {"box": pbox, "align": align, "valign": pv},
+                "secondary": {"box": sbox, "align": align, "valign": sv},
+                "badge": None, "badge_shape": "circle", "decor": [],
+                "panel": None, "ribbon": False, "outline": 0.0,
+                "type_scale": FLEX_TYPE_SCALE, "inset": 0.0, "weight": 1.0,
+                "content_rect": r,
+            })
+    return out
+
+
+FLEX_MIN_W = 0.66         # a text area narrower than this is widened around
+                          # its center (a moderate overlap is allowed; the
+                          # object cost still judges it)
+
+
+def _widen(r, min_w: float = FLEX_MIN_W):
+    x, y, w, h = r
+    if w >= min_w:
+        return r
+    cx = x + w / 2
+    x0 = min(max(0.0, cx - min_w / 2), 1.0 - min_w)
+    return (x0, y, min_w, h)
+
+
+def _two_zone_templates(spec: Dict, rects) -> List[Dict]:
+    """Empty space is often L / T shaped (a wide band + a column between two
+    objects): headline + emphasis go to the upper area, the details to the
+    part of the lower area below it -- one layout over two empty areas."""
+    out = []
+    dtype = spec.get("design_type", "poster")
+    for ia, a in enumerate(rects):
+        for ib, b in enumerate(rects):
+            if ia == ib:
+                continue
+            ay1 = a[1] + a[3]
+            by0 = max(b[1], ay1)
+            bh = b[1] + b[3] - by0
+            if a[1] + a[3] / 2 >= b[1] + b[3] / 2 or bh < 0.14 or a[3] < 0.12:
+                continue
+            for kind, sv in (("spread", "bottom"), ("near", "top")):
+                out.append({
+                    "id": f"flex2.{kind}@free{ia}.{ib}", "family": "flex",
+                    "design_types": {dtype}, "aspects": set(templates.GENERAL),
+                    "primary": {"box": a, "align": "center", "valign": "middle"},
+                    "secondary": {"box": _widen((b[0], by0, b[2], bh)),
+                                  "align": "center", "valign": sv},
+                    "badge": None, "badge_shape": "circle", "decor": [],
+                    "panel": None, "ribbon": False, "outline": 0.0,
+                    "type_scale": FLEX_TYPE_SCALE, "inset": 0.0, "weight": 1.0,
+                    # boxes are canvas fractions: the content area is the canvas
+                    "content_rect": (0.0, 0.0, 1.0, 1.0),
+                })
+    return out
+
+
+def text_fill(reg: FontRegistry, layout: Dict, rect, cw: int, ch: int) -> float:
+    """0..1: how much of the empty area's height x width the text block spans
+    (the union of all lines), so a block crammed in one corner scores low."""
+    boxes = [b for b, _, _ in line_boxes(reg, layout, pad_em=0)]
+    if not boxes or not rect:
+        return 0.0
+    x0 = min(b[0] for b in boxes); y0 = min(b[1] for b in boxes)
+    x1 = max(b[2] for b in boxes); y1 = max(b[3] for b in boxes)
+    rw, rh = rect[2] * cw, rect[3] * ch
+    return min(1.0, (y1 - y0) / max(1.0, rh)) * 0.6 + \
+        min(1.0, (x1 - x0) / max(1.0, rw)) * 0.4
+
+
 def fit_layout(reg: FontRegistry, spec: Dict, background: Image.Image,
                canvas: Dict, seed: int = 0, candidates: int = 0,
                force: str = "") -> Tuple[Dict, List[str], List[str]]:
@@ -179,20 +392,46 @@ def fit_layout(reg: FontRegistry, spec: Dict, background: Image.Image,
         pool = rng.sample(pool, candidates)
     fam = templates.FAMILY_ALIASES.get(spec.get("composition_hint", "auto"),
                                        spec.get("composition_hint", "auto"))
+    rects = empty_rects(stats)
+    variants = (_fitted_variants(pool, rects) + _flex_templates(spec, rects)
+                + _two_zone_templates(spec, rects))
+    for v in variants:                      # visible to compositions.choose
+        templates.BY_ID[v["id"]] = v
     scored = []
-    for t in pool:
-        eng = LayoutEngine(reg, canvas)
-        lay = eng.layout(spec, seed=seed, force_composition=t["id"])
-        cost = score_layout(reg, lay, stats, eng.warnings)
-        if t["family"] == fam:
-            cost *= 0.92          # the LLM's layout family, a soft preference
-        scored.append((cost, t["id"], lay, list(eng.warnings)))
+    try:
+        for t in pool + variants:
+            eng = LayoutEngine(reg, canvas)
+            lay = eng.layout(spec, seed=seed, force_composition=t["id"])
+            cost = score_layout(reg, lay, stats, eng.warnings)
+            if t["family"] == fam:
+                cost *= 0.92      # the LLM's layout family, a soft preference
+            scored.append((cost, t["id"], lay, list(eng.warnings)))
+    finally:
+        for v in variants:
+            templates.BY_ID.pop(v["id"], None)
+    # a calm spot is worth little if the headline ends up tiny: cost grows as
+    # the headline shrinks below the biggest one any candidate achieved
+    def head_px(lay):
+        return max([b["size_px"] for b in lay["blocks"] if b["role"] == "headline"]
+                   or [0])
+    top = max([head_px(l) for _, _, l, _ in scored] or [1]) or 1
+    big = None
+    if rects:
+        bx0 = min(r[0] for r in rects); by0 = min(r[1] for r in rects)
+        bx1 = max(r[0] + r[2] for r in rects); by1 = max(r[1] + r[3] for r in rects)
+        big = (bx0, by0, bx1 - bx0, by1 - by0)
+    scored = [(c + HEADLINE_SIZE_WEIGHT * (1 - head_px(l) / top)
+               + (FILL_WEIGHT * (1 - text_fill(reg, l, big, cw, ch)) if big else 0),
+               i, l, w) for c, i, l, w in scored]
     scored.sort(key=lambda s: s[0])
     best = scored[0][0]
     near = [s for s in scored if s[0] <= best * NEAR_BEST + 1e-9][:TOP_K]
     cost, tid, lay, warns = rng.choice(near)
-    report = [f"image-fit: {len(scored)} templates scored, picked {tid} "
+    report = [f"image-fit: {len(scored)} layouts scored ({len(variants)} fitted "
+              f"into {len(rects)} empty areas), picked {tid} "
               f"(cost {cost:.3f}, best {best:.3f}, {len(near)} near-best)"]
+    report += [f"  empty area x={r[0]:.2f} y={r[1]:.2f} w={r[2]:.2f} h={r[3]:.2f}"
+               for r in rects]
     report += [f"  {c:.3f} {i}" for c, i, _, _ in scored[:TOP_K]]
     return lay, report, warns
 

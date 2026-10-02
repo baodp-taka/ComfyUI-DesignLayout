@@ -265,7 +265,8 @@ class LayoutEngine:
                                 allow_multiline=True,
                                 max_lines=self._max_lines(role, width),
                                 min_size=floor)
-        fit.update({"role": role, "text": text, "font": font_file,
+        fit.update({"role": role, "text": measure.flat_text(text),
+                    "font": font_file,
                     "letter_spacing": ls, "_src": t, "_w": width})
         return fit
 

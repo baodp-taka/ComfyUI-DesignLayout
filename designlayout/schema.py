@@ -111,7 +111,7 @@ def block_to_compat(block: Dict[str, Any]) -> Dict[str, Any]:
     keys = ["text", "role", "font", "size_px", "cx", "cy", "align", "color",
             "letter_spacing", "shadow", "outline_width", "outline_color",
             # additive/optional:
-            "box", "lines", "line_height", "scrim"]
+            "box", "lines", "line_height", "scrim", "effect"]
     return {k: block[k] for k in keys if k in block}
 
 
@@ -133,4 +133,7 @@ def to_app_json(layout: Dict[str, Any]) -> Dict[str, Any]:
         "palette": layout.get("palette", {"text": None, "accent": None}),
         "texts": [block_to_compat(b) for b in layout.get("blocks", [])],
         "shapes": layout.get("shapes", []),
+        # {"preset", "main", "accent"} when text effects are on (else absent)
+        **({"text_effect": layout["text_effect"]}
+           if layout.get("text_effect") else {}),
     }

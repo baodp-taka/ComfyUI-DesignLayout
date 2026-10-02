@@ -485,3 +485,75 @@ def test_image_fit_pool_has_no_plates_and_defocus_calms():
     after = image_fit.ImageStats(treated, 1080, 1080)
     for box, _, _ in image_fit.line_boxes(reg, lay):
         assert after.box_cost(box)[1] < 0.6 * before.box_cost(box)[1]
+
+
+# ---- text effects --------------------------------------------------------------
+def test_text_fx_colors_and_presets():
+    from designlayout import text_fx
+    # near-white cream is neutral (HLS saturation alone would call it vivid)
+    assert text_fx.is_neutral("#FFF6E5") and text_fx.is_neutral("#3A2626")
+    assert not text_fx.is_neutral("#FF5C9A")
+    assert not text_fx.stands_out("#FFF6E5", "#F9D9E2")      # cream on light pink
+    assert not text_fx.stands_out("#4A7BD8", "#3C66C0")      # blue on blue
+    assert not text_fx.stands_out("#3A2626", "#041E5B")      # dark brown on night sky
+    assert not text_fx.stands_out("#7A88BA", "#041E5B")      # dull gray-blue on blue
+    assert text_fx.stands_out("#F5C542", "#1B2A5C")          # gold on navy
+    deep = text_fx.deepened("#FF5C9A", "#FCDEE1")            # pink -> deep pink
+    assert text_fx.stands_out(deep, "#FCDEE1") and text_fx.hue_dist(deep, "#FF5C9A") < 0.03
+    # soft moods never get a triad partner (e.g. green next to pink)
+    soft = text_fx.harmonies("#FF5C9A", "playful")
+    dists = sorted(round(text_fx.hue_dist(c, "#FF5C9A"), 2) for c in soft)
+    assert dists == [0.08, 0.08, 0.5], dists                # analogous + complement
+    loud = text_fx.harmonies("#FF5C9A", "festive")
+    assert any(abs(text_fx.hue_dist(c, "#FF5C9A") - 1 / 3) < 0.02 for c in loud)
+
+
+@pytest.mark.parametrize("effect", ["auto"] + list(__import__(
+    "designlayout.text_fx", fromlist=["PRESETS"]).PRESETS))
+def test_text_fx_render(effect):
+    from designlayout import image_fit, zone_check, text_fx
+    reg = _reg()
+    cw = ch = 720
+    spec = {"language": "vietnamese", "mood": "festive", "design_type": "poster",
+            "background_color": "#1B1F3B",
+            "texts": [{"role": "headline", "text": "Tiệc Sinh Nhật"},
+                      {"role": "emphasis", "text": "7 tuổi"},
+                      {"role": "detail", "text": "17:30 Thứ Bảy 25/10"}]}
+    img = _half_busy(cw, ch, "right")
+    lay, report, _ = image_fit.fit_layout(reg, spec, img, {"w": cw, "h": ch}, seed=3)
+    final, _ = zone_check.check(img, lay, allow_scrim=False)
+    out, style = text_fx.render_with_effects(reg, final, img, "festive",
+                                             ["#FF7A1A"], seed=3, effect=effect)
+    assert out.size == (cw, ch) and style["preset"] in text_fx.PRESETS
+    if effect != "auto":
+        assert style["preset"] == effect
+    assert any("effect" in b for b in final["blocks"])
+    # same seed -> same style; "none" leaves the flat path untouched
+    assert text_fx.choose_style(img, final, "festive", ["#FF7A1A"], 3, effect) == style
+    assert text_fx.render_with_effects(reg, final, img, "festive", [], 3, "none") == (None, None)
+
+
+def test_text_fx_no_neon_on_light_background():
+    from designlayout import text_fx
+    reg = _reg()
+    img = Image.new("RGB", (600, 600), (250, 220, 230))
+    lay = LayoutEngine(reg, {"w": 600, "h": 600}).layout(
+        {"language": "latin", "mood": "festive", "design_type": "poster",
+         "background_color": "#FADCE6",
+         "texts": [{"role": "headline", "text": "PARTY"}]}, seed=1)
+    presets = {text_fx.choose_style(img, lay, "festive", [], s)["preset"] for s in range(40)}
+    assert "neon" not in presets and len(presets) >= 3
+
+
+def test_line_break_hints_and_fewer_lines():
+    from designlayout import measure
+    reg = _reg()
+    f = measure.fit_block(reg, "Tiệc Sinh Nhật\nBé Bảo Ngọc", "aachenb.ttf",
+                          "vietnamese", max_w=330, max_h=400, target_size=90,
+                          ls_frac=0, max_lines=3)
+    assert f["lines"] == ["Tiệc Sinh Nhật", "Bé Bảo Ngọc"]   # never "Nhật Bé"
+    assert measure.flat_text("Tiệc Sinh Nhật\nBé Bảo Ngọc") == "Tiệc Sinh Nhật Bé Bảo Ngọc"
+    # a hint is a preference: wide enough -> still one line
+    f = measure.fit_block(reg, "Happy\nBirthday", "aachenb.ttf", "latin",
+                          max_w=2000, max_h=400, target_size=60, ls_frac=0)
+    assert f["lines"] == ["Happy Birthday"]

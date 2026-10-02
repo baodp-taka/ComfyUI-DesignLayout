@@ -20,7 +20,7 @@
     "ffont5.ttf",
     "ffont17.ttf"
   ],
-  "no_digits": ["Vetka.otf"],
+  "no_digits": ["Vetka.otf", "Coiny-Regular.ttf"],
   "tags": {
     "AmaticSC-Regular.ttf": ["handwritten", "playful", "thin"],
     "Barrio-Regular.otf": ["playful", "bold"],
@@ -162,6 +162,28 @@
     "Roboto-Thin.ttf": ["clean", "thin"],
     "Torque Sense.otf": ["bold"],
     "True North Black.otf": ["bold"],
-    "Venera-900.otf": ["bold", "tech"]
+    "Venera-900.otf": ["bold", "tech"],
+
+    "BeVietnamPro-Black.ttf": ["bold", "clean"],
+    "BeVietnamPro-ExtraBold.ttf": ["bold", "clean"],
+    "BeVietnamPro-SemiBold.ttf": ["clean"],
+    "ChakraPetch-Bold.ttf": ["tech", "bold"],
+    "Anton-Regular.ttf": ["bold"],
+    "Bangers-Regular.ttf": ["playful", "bold", "retro"],
+    "Bungee-Regular.ttf": ["bold", "retro", "tech"],
+    "BarlowCondensed-ExtraBold.ttf": ["bold", "clean"],
+    "PaytoneOne-Regular.ttf": ["bold", "playful"],
+    "AlfaSlabOne-Regular.ttf": ["bold", "vintage"],
+    "Prata-Regular.ttf": ["elegant"],
+    "PlayfairDisplaySC-Bold.ttf": ["elegant", "vintage"],
+    "Pacifico-Regular.ttf": ["playful", "retro", "handwritten"],
+    "Lobster-Regular.ttf": ["playful", "retro", "bold", "handwritten"],
+    "GreatVibes-Regular.ttf": ["elegant", "handwritten"],
+    "Charm-Bold.ttf": ["elegant", "handwritten"],
+    "PatrickHand-Regular.ttf": ["handwritten", "playful"],
+    "Sriracha-Regular.ttf": ["handwritten", "playful"],
+    "Mali-Bold.ttf": ["playful", "handwritten"],
+    "Itim-Regular.ttf": ["playful", "clean"],
+    "Coiny-Regular.ttf": ["playful", "bold", "festive"]
   }
 }

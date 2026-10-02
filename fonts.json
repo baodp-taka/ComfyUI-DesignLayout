@@ -1515,6 +1515,226 @@
       "family": "Scary Vodoo DEMO",
       "group": "uncategorized",
       "languages": []
+    },
+    {
+      "file": "AlfaSlabOne-Regular.ttf",
+      "family": "Alfa Slab One",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese"
+      ]
+    },
+    {
+      "file": "Anton-Regular.ttf",
+      "family": "Anton",
+      "group": "display",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese"
+      ]
+    },
+    {
+      "file": "Bangers-Regular.ttf",
+      "family": "Bangers",
+      "group": "display",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese"
+      ]
+    },
+    {
+      "file": "BarlowCondensed-ExtraBold.ttf",
+      "family": "Barlow Condensed",
+      "group": "display",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese"
+      ]
+    },
+    {
+      "file": "BeVietnamPro-Black.ttf",
+      "family": "Be Vietnam Pro Black",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese"
+      ]
+    },
+    {
+      "file": "BeVietnamPro-ExtraBold.ttf",
+      "family": "Be Vietnam Pro ExtraBold",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese"
+      ]
+    },
+    {
+      "file": "BeVietnamPro-SemiBold.ttf",
+      "family": "Be Vietnam Pro SemiBold",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese"
+      ]
+    },
+    {
+      "file": "Bungee-Regular.ttf",
+      "family": "Bungee",
+      "group": "display",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese"
+      ]
+    },
+    {
+      "file": "ChakraPetch-Bold.ttf",
+      "family": "Chakra Petch",
+      "group": "sans",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese",
+        "thai"
+      ]
+    },
+    {
+      "file": "Charm-Bold.ttf",
+      "family": "Charm",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese",
+        "thai"
+      ]
+    },
+    {
+      "file": "Coiny-Regular.ttf",
+      "family": "Coiny",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese"
+      ]
+    },
+    {
+      "file": "GreatVibes-Regular.ttf",
+      "family": "Great Vibes",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese",
+        "cyrillic"
+      ]
+    },
+    {
+      "file": "Itim-Regular.ttf",
+      "family": "Itim",
+      "group": "decorative",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese",
+        "thai"
+      ]
+    },
+    {
+      "file": "Lobster-Regular.ttf",
+      "family": "Lobster",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese",
+        "cyrillic"
+      ]
+    },
+    {
+      "file": "Mali-Bold.ttf",
+      "family": "Mali",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese",
+        "thai"
+      ]
+    },
+    {
+      "file": "Pacifico-Regular.ttf",
+      "family": "Pacifico",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese",
+        "cyrillic"
+      ]
+    },
+    {
+      "file": "PatrickHand-Regular.ttf",
+      "family": "Patrick Hand",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese"
+      ]
+    },
+    {
+      "file": "PaytoneOne-Regular.ttf",
+      "family": "Paytone One",
+      "group": "display",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese"
+      ]
+    },
+    {
+      "file": "PlayfairDisplaySC-Bold.ttf",
+      "family": "Playfair Display SC",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese",
+        "cyrillic"
+      ]
+    },
+    {
+      "file": "Prata-Regular.ttf",
+      "family": "Prata",
+      "group": "serif",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese",
+        "cyrillic"
+      ]
+    },
+    {
+      "file": "Sriracha-Regular.ttf",
+      "family": "Sriracha",
+      "group": "script",
+      "languages": [
+        "latin",
+        "latin_ext",
+        "vietnamese",
+        "thai"
+      ]
     }
   ]
 }

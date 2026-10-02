@@ -9,6 +9,8 @@ from __future__ import annotations
 import json
 
 from ..designlayout import image_fit, zone_check, render_preview, compositions
+from ..designlayout import text_fx
+from ..designlayout.colors import parse_hex
 from ..designlayout.schema import to_app_json
 from ..designlayout.fonts import FontRegistry
 from ..designlayout.tensors import pil_from_any, pil_to_tensor
@@ -46,12 +48,17 @@ class DesignLayoutFromImage:
                                       "step": 0.05}),
                 "min_contrast": ("FLOAT", {"default": 4.5, "min": 1.0,
                                            "max": 21.0, "step": 0.1}),
-            }
+            },
+            "optional": {
+                # text look: none = flat text (as before), auto = preset +
+                # colors picked from mood / LLM colors / the image, per seed
+                "text_effect": (text_fx.EFFECT_CHOICES, {"default": "none"}),
+            },
         }
 
     def run(self, background, design_spec, fonts_dir, canvas_width,
             canvas_height, seed, composition, candidates, defocus,
-            min_contrast):
+            min_contrast, text_effect="none"):
         spec = json.loads(design_spec) if design_spec.strip() else {}
         bg = pil_from_any(background)
         reg = FontRegistry(_resolve_fonts_dir(fonts_dir))
@@ -66,7 +73,17 @@ class DesignLayoutFromImage:
         final, zr = zone_check.check(treated, layout,
                                      min_contrast=min_contrast,
                                      allow_scrim=False)
-        composite = render_preview.composite_preview(treated, final, reg)
+        composite, style = text_fx.render_with_effects(
+            reg, final, treated, spec.get("mood", final.get("mood", "")),
+            [c for c in (parse_hex(spec.get("text_color")),
+                         parse_hex(spec.get("accent_color"))) if c],
+            seed, text_effect)
+        if composite is None:
+            composite = render_preview.composite_preview(treated, final, reg)
+        else:
+            final["text_effect"] = style
+            zr.append(f"text effect: {style['preset']} "
+                      f"{style['main']} / {style['accent']}")
         report = report + zr + [f"warning: {w}" for w in
                                 dict.fromkeys(warns + reg.warnings)]
         return (json.dumps(to_app_json(final), ensure_ascii=False),

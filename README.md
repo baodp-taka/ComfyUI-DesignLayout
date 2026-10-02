@@ -91,7 +91,20 @@ Chọn bố cục **sau khi đã có ảnh nền**, giống cách designer làm:
 - **In:** `background` (IMAGE sau VAEDecode), `design_spec`, `fonts_dir`,
   `canvas_width/height`, `seed`, `composition` (`auto` = chấm điểm; tên
   template = ép), `candidates` (0 = tất cả), `defocus` (0 tắt · 1 mặc định ·
-  2 mạnh), `min_contrast`.
+  2 mạnh), `min_contrast`, `text_effect` (tuỳ chọn, mặc định `none`).
+- **`text_effect`** (`designlayout/text_fx.py`): chữ do code vẽ nên luôn đúng
+  chính tả / dấu. `none` = chữ phẳng như cũ; `auto` = chọn kiểu theo mood +
+  độ sáng nền + seed; hoặc ép một kiểu:
+  - hiện đại (bản đồ độ cao → pháp tuyến → chiếu sáng): `inflated` (chữ
+    phồng), `chrome`, `glass` (kính mờ), `holo` (ánh cầu vồng), `gradient`
+    (chuyển màu + nhiễu hạt);
+  - cổ điển: `metal3d`, `neon`, `candy`, `longshadow`, `outline_pop`.
+
+  Màu: các **màu nổi bật so với tổng thể** của ảnh nền (đèn trên trời đêm,
+  bóng bay vàng trên nền hồng); nền không có màu nổi bật thì dùng
+  `text_color` / `accent_color` của LLM. `neon`, `glass` không dùng cho nền
+  sáng. Kiểu + màu đã chọn ghi vào `final_json.text_effect` và `effect` của
+  từng dòng.
 - **Ra:** `final_json`, `composite_preview`, `background_treated` (nền đã xoá
   phông — **app tự vẽ chữ thì dùng ảnh này làm nền**), `layout_json`,
   `report` (điểm từng template + mức xoá phông từng dòng).
