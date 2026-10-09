@@ -12,6 +12,9 @@ Registers:
     InviteCardComposite    put the glyphs back on the inpainted card
     SaveTextFile           return text (e.g. the LLM's plan JSON) from a
                            RunPod worker-comfyui job
+    PoseSkeleton           (folder pose_skeleton/, separate from the layout)
+                           pose photo -> OpenPose-style skeleton (MediaPipe)
+                           for the AI-model try-on
 """
 import importlib
 
@@ -26,6 +29,7 @@ _NODES = [
     ("nodes.invite_node", "InviteCardPrepare", "Invite Card Prepare"),
     ("nodes.invite_node", "InviteCardComposite", "Invite Card Composite"),
     ("nodes.text_node", "SaveTextFile", "Save Text File"),
+    ("pose_skeleton.nodes", "PoseSkeleton", "Pose Skeleton (MediaPipe)"),
 ]
 
 NODE_CLASS_MAPPINGS = {}

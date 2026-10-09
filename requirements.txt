@@ -6,3 +6,7 @@ fonttools>=4.40
 opencv-python-headless>=4.8   # optional; code falls back to numpy if absent
 PyYAML>=6.0                   # optional; fonts.json is used by default
 pytest>=7.0                   # tests only
+# PoseSkeleton (pose_skeleton/) only -- see pose_skeleton/README.md:
+# mediapipe pulls opencv-contrib-python (GUI, needs libGL): on servers keep ONE
+# opencv-contrib-python-headless instead; Linux also needs libportaudio2.
+mediapipe==0.10.35
