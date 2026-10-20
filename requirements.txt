@@ -10,3 +10,10 @@ pytest>=7.0                   # tests only
 # mediapipe pulls opencv-contrib-python (GUI, needs libGL): on servers keep ONE
 # opencv-contrib-python-headless instead; Linux also needs libportaudio2.
 mediapipe==0.10.35
+# ProductCutout (product_cutout/) only -- BiRefNet (ZhengPeng7/BiRefNet) runs
+# through transformers (trust_remote_code); torch / torchvision come with ComfyUI.
+scipy>=1.10
+transformers>=4.50,<5
+timm>=1.0
+kornia>=0.7
+einops>=0.7

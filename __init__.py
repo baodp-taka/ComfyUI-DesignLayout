@@ -15,6 +15,8 @@ Registers:
     PoseSkeleton           (folder pose_skeleton/, separate from the layout)
                            pose photo -> OpenPose-style skeleton (MediaPipe)
                            for the AI-model try-on
+    ProductCutout          (folder product_cutout/) product photo -> product
+                           on white, cropped tight (BiRefNet) for AI Background
 """
 import importlib
 
@@ -30,6 +32,7 @@ _NODES = [
     ("nodes.invite_node", "InviteCardComposite", "Invite Card Composite"),
     ("nodes.text_node", "SaveTextFile", "Save Text File"),
     ("pose_skeleton.nodes", "PoseSkeleton", "Pose Skeleton (MediaPipe)"),
+    ("product_cutout.nodes", "ProductCutout", "Product Cutout (BiRefNet)"),
 ]
 
 NODE_CLASS_MAPPINGS = {}
