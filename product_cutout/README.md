@@ -22,6 +22,34 @@ original photo was returned).
   repaints the whole picture, so light and shadows stay natural.
 - Specks and small bits of neighbours are dropped (largest object only).
 
+# RemoveBackground (same folder, same model)
+
+**Remove Background (BiRefNet)**: a picture the AI drew on a plain background
+becomes a transparent RGBA image (logo / sticker); `SaveImage` writes it as a
+transparent PNG.
+
+```
+VAEDecode → RemoveBackground → SaveImage
+```
+
+| Input | Default | |
+|---|---|---|
+| `image` | | generated picture (frame 0 is used) |
+| `outline` | 0 | white sticker outline, fraction of the long side (0 = logo; the server sends 0.02) |
+
+Outputs: `image` (RGBA, 4 channels), `mask`, `plain_background`.
+
+- BiRefNet decides what the subject is by meaning, not by colour, so white
+  parts inside a logo on a white page are kept.
+- Edge clean-up: when the picture's border is one plain colour, that colour is
+  taken out of the soft edge pixels, `F = (C - (1 - a) * bg) / a` (no halo on
+  a dark page). A busy border skips this step (`plain_background` = false).
+- Sticker outline drawn by code after the cut (like Canva), so it is always
+  even; holes narrower than the outline fill white, wide holes stay open. The
+  canvas grows only when the outline would hit an edge.
+- Weak spot: a white detail on the subject's outer edge (white on white) can
+  fade.
+
 ## GPU memory
 
 Same pattern as ComfyUI's upscale models: before each run the node asks
@@ -41,5 +69,5 @@ stay in RAM (fp16, ~0.5 GB) so the next run does not reload them from disk.
 ## Tests
 
 ```
-python -m pytest -q tests/test_product_cutout.py
+python -m pytest -q tests/test_product_cutout.py tests/test_transparent.py
 ```

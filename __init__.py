@@ -17,6 +17,8 @@ Registers:
                            for the AI-model try-on
     ProductCutout          (folder product_cutout/) product photo -> product
                            on white, cropped tight (BiRefNet) for AI Background
+    RemoveBackground       (folder product_cutout/) picture -> transparent
+                           RGBA, optional white sticker outline (BiRefNet)
 """
 import importlib
 
@@ -33,6 +35,7 @@ _NODES = [
     ("nodes.text_node", "SaveTextFile", "Save Text File"),
     ("pose_skeleton.nodes", "PoseSkeleton", "Pose Skeleton (MediaPipe)"),
     ("product_cutout.nodes", "ProductCutout", "Product Cutout (BiRefNet)"),
+    ("product_cutout.nodes", "RemoveBackground", "Remove Background (BiRefNet)"),
 ]
 
 NODE_CLASS_MAPPINGS = {}

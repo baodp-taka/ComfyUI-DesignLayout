@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-"""ComfyUI node: ProductCutout -- product photo -> clean reference (AI Background).
+"""ComfyUI nodes on BiRefNet (ZhengPeng7/BiRefNet, MIT):
 
-BiRefNet (ZhengPeng7/BiRefNet, MIT) finds the product; cutout.py puts it on
-white and crops it tight. Feeds "Picture 1" of Qwen-Image-Edit 2511.
+- ProductCutout: product photo -> clean reference (AI Background). cutout.py
+  puts the product on white and crops it tight; feeds "Picture 1" of 2511.
+- RemoveBackground: generated picture -> transparent RGBA (logo / sticker).
+  transparent.py cleans the edges and draws the optional white outline.
 
 GPU memory follows ComfyUI's own upscale-model pattern: before each run the
 model asks ComfyUI to free the VRAM it needs (ComfyUI unloads its own models
@@ -28,6 +30,7 @@ import timm  # noqa: F401
 import transformers  # noqa: F401
 
 from .cutout import DEFAULT_MIN_PART, DEFAULT_PADDING, cutout
+from .transparent import transparent
 
 MODEL_DIR = os.environ.get("BIREFNET_MODEL_DIR") or os.path.join(
     folder_paths.models_dir, "birefnet", "BiRefNet")
@@ -105,3 +108,29 @@ class ProductCutout:
                                     min_part)
         return (torch.from_numpy(out)[None], torch.from_numpy(mask)[None],
                 cropped)
+
+
+class RemoveBackground:
+    """Picture -> RGBA IMAGE (4 channels): SaveImage writes a transparent PNG."""
+    CATEGORY = "image/product"
+    RETURN_TYPES = ("IMAGE", "MASK", "BOOLEAN")
+    RETURN_NAMES = ("image", "mask", "plain_background")
+    FUNCTION = "run"
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {"image": ("IMAGE",)},
+            "optional": {
+                # white sticker outline, fraction of the long side; 0 = logo
+                "outline": ("FLOAT", {"default": 0.0, "min": 0.0,
+                                      "max": 0.1, "step": 0.005}),
+            },
+        }
+
+    def run(self, image, outline=0.0):
+        rgb = image[0].detach().cpu().numpy().astype(np.float32)[..., :3]
+        out, alpha, plain = transparent(rgb, foreground_alpha(rgb), outline)
+        rgba = np.dstack([out, alpha])
+        return (torch.from_numpy(rgba)[None], torch.from_numpy(alpha)[None],
+                plain)
