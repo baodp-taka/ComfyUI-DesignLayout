@@ -22,14 +22,14 @@ original photo was returned).
   repaints the whole picture, so light and shadows stay natural.
 - Specks and small bits of neighbours are dropped (largest object only).
 
-# RemoveBackground (same folder, same model)
+# TransparentCutout (same folder, same model)
 
-**Remove Background (BiRefNet)**: a picture the AI drew on a plain background
+**Transparent Cutout (BiRefNet)**: a picture the AI drew on a plain background
 becomes a transparent RGBA image (logo / sticker); `SaveImage` writes it as a
 transparent PNG.
 
 ```
-VAEDecode → RemoveBackground → SaveImage
+VAEDecode → TransparentCutout → SaveImage
 ```
 
 | Input | Default | |
@@ -47,6 +47,8 @@ Outputs: `image` (RGBA, 4 channels), `mask`, `plain_background`.
 - Sticker outline drawn by code after the cut (like Canva), so it is always
   even; holes narrower than the outline fill white, wide holes stay open. The
   canvas grows only when the outline would hit an edge.
+- Not named `RemoveBackground`: ComfyUI core (v0.38+) has a node with that
+  name and a custom node can never replace a core one (it is silently skipped).
 - Weak spot: a white detail on the subject's outer edge (white on white) can
   fade.
 

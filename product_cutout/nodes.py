@@ -3,7 +3,7 @@
 
 - ProductCutout: product photo -> clean reference (AI Background). cutout.py
   puts the product on white and crops it tight; feeds "Picture 1" of 2511.
-- RemoveBackground: generated picture -> transparent RGBA (logo / sticker).
+- TransparentCutout: generated picture -> transparent RGBA (logo / sticker).
   transparent.py cleans the edges and draws the optional white outline.
 
 GPU memory follows ComfyUI's own upscale-model pattern: before each run the
@@ -110,7 +110,7 @@ class ProductCutout:
                 cropped)
 
 
-class RemoveBackground:
+class TransparentCutout:
     """Picture -> RGBA IMAGE (4 channels): SaveImage writes a transparent PNG."""
     CATEGORY = "image/product"
     RETURN_TYPES = ("IMAGE", "MASK", "BOOLEAN")

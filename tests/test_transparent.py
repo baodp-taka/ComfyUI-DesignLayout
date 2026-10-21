@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""RemoveBackground logic (numpy only, no model)."""
+"""TransparentCutout logic (numpy only, no model)."""
 import numpy as np
 
 from product_cutout.transparent import transparent

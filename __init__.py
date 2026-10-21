@@ -17,10 +17,11 @@ Registers:
                            for the AI-model try-on
     ProductCutout          (folder product_cutout/) product photo -> product
                            on white, cropped tight (BiRefNet) for AI Background
-    RemoveBackground       (folder product_cutout/) picture -> transparent
+    TransparentCutout      (folder product_cutout/) picture -> transparent
                            RGBA, optional white sticker outline (BiRefNet)
 """
 import importlib
+import sys
 
 # Each node is imported on its own: one that cannot load (a missing library,
 # torch outside ComfyUI in offline tests) does not take the others down, and
@@ -35,12 +36,22 @@ _NODES = [
     ("nodes.text_node", "SaveTextFile", "Save Text File"),
     ("pose_skeleton.nodes", "PoseSkeleton", "Pose Skeleton (MediaPipe)"),
     ("product_cutout.nodes", "ProductCutout", "Product Cutout (BiRefNet)"),
-    ("product_cutout.nodes", "RemoveBackground", "Remove Background (BiRefNet)"),
+    ("product_cutout.nodes", "TransparentCutout", "Transparent Cutout (BiRefNet)"),
 ]
+
+# ComfyUI loads its core nodes first and silently skips a custom node with
+# the same name (e.g. core "RemoveBackground"); a name already taken by
+# another pack is just as ambiguous. Say "not loaded" so the build's quick
+# test fails instead of a job silently running someone else's node.
+_CORE = getattr(sys.modules.get("nodes"), "NODE_CLASS_MAPPINGS", None) or {}
 
 NODE_CLASS_MAPPINGS = {}
 NODE_DISPLAY_NAME_MAPPINGS = {}
 for _module, _cls, _title in _NODES:
+    if _cls in _CORE:
+        print(f"[ComfyUI-DesignLayout] {_cls} not loaded: name already "
+              "taken (ComfyUI core or another node pack)")
+        continue
     try:
         NODE_CLASS_MAPPINGS[_cls] = getattr(importlib.import_module(f".{_module}", __name__), _cls)
         NODE_DISPLAY_NAME_MAPPINGS[_cls] = _title
