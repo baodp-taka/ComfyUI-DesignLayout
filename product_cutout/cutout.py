@@ -6,9 +6,11 @@ reference picture: 2511 then sees labels and logos clearly even when the photo
 was taken from afar or on a cluttered table. The AI still repaints the whole
 picture, so light and shadows stay natural.
 
-Several separate objects of similar size (a cluttered shelf) -> the original
-photo is returned unchanged: the prompt's "the product" lets 2511 pick it,
-which works better than a crop around all of them.
+This step only removes the old background and zooms in; it does not decide
+which object is the product. Several separate objects (a bottle next to a
+stack of towels): all are kept, except objects cut by the photo's frame
+(a table edge, a leaf in the corner) when something else is left. Returning
+the whole photo instead let 2511 keep the old scene almost unchanged.
 
 numpy + scipy only, so it can be tested offline.
 """
@@ -18,9 +20,15 @@ import numpy as np
 from scipy import ndimage
 
 DEFAULT_PADDING = 0.08   # margin, fraction of the product's long side
-DEFAULT_MIN_PART = 0.15  # a second object this big (vs the largest) = many
+DEFAULT_MIN_PART = 0.15  # smaller than this (vs the largest) = a speck
 _THRESHOLD = 0.5         # alpha above this = product
 _EDGE = 3                # keep the soft edge around the product (px)
+_FRAME = 3               # an object within this of the border is cut by it
+
+
+def _touches_frame(region: np.ndarray) -> bool:
+    return bool(region[:_FRAME].any() or region[-_FRAME:].any()
+                or region[:, :_FRAME].any() or region[:, -_FRAME:].any())
 
 
 def cutout(rgb: np.ndarray, alpha: np.ndarray,
@@ -30,7 +38,7 @@ def cutout(rgb: np.ndarray, alpha: np.ndarray,
     """rgb float [H, W, 3] 0..1, alpha float [H, W] 0..1.
 
     Returns (image, mask, cropped). cropped=False -> original photo and a
-    full mask (nothing found, or several separate objects).
+    full mask (nothing found).
     """
     h, w = alpha.shape
     keep_all = (rgb, np.ones((h, w), np.float32), False)
@@ -38,11 +46,12 @@ def cutout(rgb: np.ndarray, alpha: np.ndarray,
     if n == 0:
         return keep_all
     sizes = ndimage.sum(np.ones_like(alpha), labels, range(1, n + 1))
-    if np.count_nonzero(sizes >= sizes.max() * min_part) > 1:
-        return keep_all
+    big = [i for i in range(n) if sizes[i] >= sizes.max() * min_part]
+    # objects cut by the frame are background, unless nothing else is left
+    inner = [i for i in big if not _touches_frame(labels == i + 1)] or big
 
-    # largest object only (drops specks / a bit of a neighbour), soft edge kept
-    main = labels == (int(np.argmax(sizes)) + 1)
+    # those objects only (drops specks), soft edge kept
+    main = np.isin(labels, [i + 1 for i in inner])
     main = ndimage.binary_dilation(main, iterations=_EDGE)
     a = (alpha * main).astype(np.float32)
 

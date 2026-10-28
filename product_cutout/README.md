@@ -12,15 +12,20 @@ LoadImage (product photo) → ProductCutout → TextEncodeQwenImageEditPlus.imag
 |---|---|---|
 | `image` | | product photo (frame 0 is used) |
 | `padding` | 0.08 | white margin, fraction of the product's long side |
-| `min_part` | 0.15 | a second separate object at least this big (vs the largest) means "several objects": the original photo is returned unchanged |
+| `min_part` | 0.15 | objects at least this big (vs the largest) count as real objects; smaller ones are specks |
 
-Outputs: `image`, `mask` (product alpha on the crop), `cropped` (false when the
-original photo was returned).
+Outputs: `image`, `mask` (product alpha on the crop), `cropped` (false when
+nothing was found and the original photo was returned).
 
 - Why: the product fills the reference, so 2511 reads labels and logos even
   when the photo was taken from afar or on a cluttered table. The AI still
   repaints the whole picture, so light and shadows stay natural.
-- Specks and small bits of neighbours are dropped (largest object only).
+- This step only removes the old background and zooms in; it does not pick
+  the product. Several real objects (a bottle next to a stack of towels) are
+  all kept; objects cut by the photo's frame (a table edge, a leaf in the
+  corner) are dropped when something else is left. Returning the whole photo
+  let 2511 keep the old scene almost unchanged.
+- Specks and small bits of neighbours are dropped.
 
 # TransparentCutout (same folder, same model)
 

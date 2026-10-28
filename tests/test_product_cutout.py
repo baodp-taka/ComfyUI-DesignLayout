@@ -39,12 +39,41 @@ def test_small_specks_are_dropped():
     assert cropped and out.shape[0] < 220         # crop ignores the speck
 
 
-def test_several_objects_keep_the_original_photo():
-    rgb, alpha = _photo()
-    alpha[50:150, 20:120] = 1.0                   # cup
-    alpha[200:350, 150:280] = 1.0                 # towel
-    out, mask, cropped = cutout(rgb, alpha)
-    assert not cropped and out is rgb and mask.min() == 1.0
+def test_several_objects_are_all_kept():
+    # bottle next to a bigger stack of towels: both stay, old background goes
+    rgb, alpha = _photo(h=400, w=400)
+    rgb[120:320, 170:230] = (0.6, 0.6, 0.6)
+    alpha[120:320, 170:230] = 1.0                 # bottle
+    alpha[150:350, 290:380] = 1.0                 # towels
+    out, mask, cropped = cutout(rgb, alpha, padding=0.0)
+    assert cropped
+    assert 210 <= out.shape[1] <= 220             # bottle .. towels
+    assert np.allclose(out[100, 30], (0.6, 0.6, 0.6))   # bottle pixels
+    assert np.allclose(out[100, 80], 1.0)         # gap is white now
+
+
+def test_object_cut_by_the_frame_is_dropped():
+    rgb, alpha = _photo(h=300, w=300)
+    alpha[120:180, 120:180] = 1.0                 # the product
+    alpha[0:120, 0:120] = 1.0                     # a big thing cut by the corner
+    out, _, cropped = cutout(rgb, alpha, padding=0.0)
+    assert cropped and out.shape[0] < 80
+
+
+def test_objects_all_cut_by_the_frame_are_kept():
+    rgb, alpha = _photo(h=300, w=300)
+    alpha[0:100, 0:100] = 1.0
+    alpha[200:300, 200:300] = 1.0
+    out, _, cropped = cutout(rgb, alpha, padding=0.0)
+    assert cropped and out.shape[0] == 300
+
+
+def test_tiny_speck_is_not_kept_next_to_the_product():
+    rgb, alpha = _photo(h=300, w=300)
+    alpha[145:155, 245:255] = 1.0                 # speck (1%)
+    alpha[20:200, 20:120] = 1.0                   # the product
+    out, _, cropped = cutout(rgb, alpha, padding=0.0)
+    assert cropped and out.shape[1] < 120
 
 
 def test_nothing_found_keeps_the_original_photo():
